@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/cpsess6149920954/public_html/
+    - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R .env.example $DEPLOYPATH/.env
