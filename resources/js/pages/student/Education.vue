@@ -1,8 +1,8 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-// Data Edukasi Terbaru (PHBS + Materi Lama Reproduksi)
+// Data Edukasi
 const slides = [
     {
         id: 1,
@@ -11,6 +11,7 @@ const slides = [
         color: "bg-purple-500",
         bg: "bg-purple-50",
         text: "text-purple-600",
+        btnColor: "bg-purple-500 hover:bg-purple-600 shadow-[0_4px_0_0_#7e22ce]",
         content: [
             "Apa itu PHBS? Kebiasaan baik sehari-hari agar tubuh sehat, kuat, dan tidak mudah sakit.",
             "Contoh PHBS:",
@@ -31,13 +32,14 @@ const slides = [
         color: "bg-green-500",
         bg: "bg-green-50",
         text: "text-green-600",
+        btnColor: "bg-green-500 hover:bg-green-600 shadow-[0_4px_0_0_#15803d]",
         content: [
             "Kenapa harus cuci tangan? Agar terhindar dari Sakit Perut, Diare, dan Cacingan!",
             "Kapan Wajib Cuci Tangan?",
             "✅ Sebelum & sesudah makan.",
             "✅ Sesudah buang air besar/kecil.",
             "✅ Sesudah bermain & pegang hewan.",
-            "✅ Sesudah batuk/bersin & buang sampah.",
+            "✅ Sesudah batuk/bersin.",
             "6 Langkah Cuci Tangan (WHO):",
             "1. Gosok antar telapak tangan.",
             "2. Gosok punggung tangan.",
@@ -55,6 +57,7 @@ const slides = [
         color: "bg-blue-500",
         bg: "bg-blue-50",
         text: "text-blue-600",
+        btnColor: "bg-blue-500 hover:bg-blue-600 shadow-[0_4px_0_0_#1d4ed8]",
         content: [
             "Kenapa harus gosok gigi? Agar gigi bersih, tidak bau mulut, dan tidak sakit gigi.",
             "Rasulullah ﷺ bersabda:",
@@ -78,6 +81,7 @@ const slides = [
         color: "bg-pink-500",
         bg: "bg-pink-50",
         text: "text-pink-600",
+        btnColor: "bg-pink-500 hover:bg-pink-600 shadow-[0_4px_0_0_#be185d]",
         content: [
             "Bagian tubuh yang tertutup baju renang adalah 'Area Pribadi'. Tidak boleh ada yang melihat/menyentuh sembarangan.",
             "Tips Kebersihan:",
@@ -91,79 +95,106 @@ const slides = [
 
 const currentSlide = ref(0);
 
+// Logic Navigasi
 const nextSlide = () => {
     if (currentSlide.value < slides.length - 1) {
         currentSlide.value++;
     }
+};
+
+const prevSlide = () => {
+    if (currentSlide.value > 0) {
+        currentSlide.value--;
+    }
+};
+
+// Cek apakah baris adalah Header/Judul (untuk styling bold)
+const isHeaderLine = (line) => {
+    return line.includes('?') || line.includes(':') || line.length < 20;
 };
 </script>
 
 <template>
     <Head title="Belajar Dulu Yuk!" />
 
-    <div class="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 font-['Comic_Sans_MS'] transition-colors duration-700"
+    <div class="h-[100dvh] w-full flex flex-col items-center justify-between font-['Comic_Sans_MS',_'Comic_Sans',_cursive] transition-colors duration-700 overflow-hidden relative"
         :class="slides[currentSlide].bg">
 
-        <div class="fixed top-6 flex gap-2 w-full max-w-md px-4 z-20">
-            <div v-for="(slide, index) in slides" :key="index" 
-                class="h-3 rounded-full flex-1 transition-all duration-500 shadow-sm"
-                :class="index <= currentSlide ? slides[index].color : 'bg-gray-200'">
+        <div class="w-full px-4 pt-4 md:pt-6 mb-2 flex-shrink-0 z-20">
+            <div class="flex gap-2 max-w-md mx-auto">
+                <div v-for="(slide, index) in slides" :key="index" 
+                    class="h-2 md:h-3 rounded-full flex-1 transition-all duration-500 shadow-sm"
+                    :class="index <= currentSlide ? slides[index].color : 'bg-gray-200/50'">
+                </div>
             </div>
         </div>
 
-        <div class="w-full max-w-3xl text-center relative z-10">
+        <div class="flex-1 w-full max-w-md md:max-w-2xl px-4 flex flex-col justify-center items-center relative z-10 overflow-hidden py-2">
             
-            <transition name="slide-fade" mode="out-in">
-                <div :key="currentSlide" class="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-2xl border-[6px] border-white flex flex-col items-center">
+            <transition name="scale-fade" mode="out-in">
+                <div :key="currentSlide" class="w-full bg-white rounded-[2rem] p-5 md:p-8 shadow-xl border-4 border-white flex flex-col items-center h-[80vh] md:h-auto max-h-[600px]">
                     
-                    <div class="text-[80px] md:text-[100px] mb-4 animate-bounce cursor-pointer hover:scale-110 transition-transform select-none">
+                    <div class="text-6xl md:text-8xl mb-2 animate-bounce cursor-pointer select-none">
                         {{ slides[currentSlide].icon }}
                     </div>
 
-                    <h1 class="text-2xl md:text-3xl font-black mb-6 leading-tight" 
+                    <h1 class="text-xl md:text-3xl font-black mb-4 leading-tight text-center px-2" 
                         :class="slides[currentSlide].text">
                         {{ slides[currentSlide].title }}
                     </h1>
 
-                    <div class="bg-gray-50 rounded-2xl p-5 w-full text-left mb-8 border border-gray-100 shadow-inner max-h-[45vh] overflow-y-auto custom-scrollbar">
+                    <div class="bg-gray-50 rounded-xl p-4 w-full text-left border border-gray-100 shadow-inner flex-1 overflow-y-auto custom-scrollbar mb-4">
                         <ul class="space-y-3">
                             <li v-for="(line, idx) in slides[currentSlide].content" :key="idx" 
-                                class="text-gray-600 font-bold text-base md:text-lg leading-relaxed flex gap-2">
-                                <span v-if="!line.match(/^\d\./) && !line.startsWith('👉') && !line.startsWith('✅') && idx > 0" class="text-orange-400 mt-1 min-w-[15px]">👉</span>
-                                <span :class="line.includes('Rasulullah') || line.includes('Wajib') || line.includes('Penting') ? 'text-green-600 font-black' : ''">
+                                class="text-slate-600 font-medium text-sm md:text-base leading-relaxed flex items-start gap-2">
+                                
+                                <span v-if="!line.match(/^\d\./) && !line.startsWith('👉') && !line.startsWith('✅') && idx > 0" 
+                                      class="text-orange-400 mt-0.5 flex-shrink-0">👉</span>
+                                
+                                <span :class="{
+                                    'font-black text-slate-800': line.includes('Rasulullah') || line.includes('Wajib'),
+                                    'font-bold text-slate-700 underline decoration-wavy decoration-orange-300': isHeaderLine(line) && idx > 0
+                                }">
                                     {{ line }}
                                 </span>
                             </li>
                         </ul>
-                        <div v-if="currentSlide === 2" class="mt-4 p-3 bg-blue-100 rounded-xl text-center text-blue-700 font-bold italic text-sm">
-                            “Anak shalih itu suka hidup bersih. Rajin cuci tangan, rajin gosok gigi, supaya sehat dan disayang Allah.”
+                        
+                        <div v-if="currentSlide === 1" class="mt-4 p-3 bg-blue-100/50 border border-blue-100 rounded-xl text-center text-blue-700 font-bold italic text-xs md:text-sm">
+                            “Anak shalih itu suka hidup bersih. Rajin cuci tangan, rajin gosok gigi!” 🚿
                         </div>
                     </div>
 
-                    <p class="text-[10px] md:text-xs text-gray-400 italic mb-6 w-full text-center border-t pt-2">
+                    <p class="text-[10px] md:text-xs text-gray-400 italic mb-4 w-full text-center border-t border-dashed border-gray-200 pt-2 flex-shrink-0">
                         {{ slides[currentSlide].source }}
                     </p>
 
-                    <div class="flex justify-center w-full">
+                    <div class="flex gap-3 w-full flex-shrink-0">
+                        <button v-if="currentSlide > 0" 
+                            @click="prevSlide"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-2xl w-14 flex items-center justify-center shadow-sm transition-transform active:scale-95">
+                            ↩️
+                        </button>
+
                         <button v-if="currentSlide < slides.length - 1" 
                             @click="nextSlide"
-                            class="text-white text-xl md:text-2xl font-black px-12 py-4 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all w-full md:w-auto"
-                            :class="slides[currentSlide].color">
-                            LANJUT BELAJAR 👉
+                            class="flex-1 text-white text-lg md:text-xl font-black py-3 md:py-4 rounded-2xl shadow-lg active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2"
+                            :class="slides[currentSlide].btnColor">
+                            LANJUT 👉
                         </button>
 
                         <Link v-else 
                             href="/siswa/login"
-                            class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-xl md:text-2xl font-black px-10 py-4 rounded-full shadow-[0_6px_0_0_#c2410c] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2 w-full md:w-auto">
-                            <span>MASUK SEKARANG</span> 🚀
+                            class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-lg md:text-xl font-black py-3 md:py-4 rounded-2xl shadow-[0_4px_0_0_#c2410c] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2">
+                            <span>MASUK YUK</span> 🚀
                         </Link>
                     </div>
 
                 </div>
             </transition>
 
-            <p class="mt-6 font-bold text-gray-400 text-sm">
-                Materi {{ currentSlide + 1 }} dari {{ slides.length }}
+            <p class="mt-3 font-bold text-gray-400/60 text-xs md:text-sm">
+                Halaman {{ currentSlide + 1 }} dari {{ slides.length }}
             </p>
 
         </div>
@@ -171,15 +202,30 @@ const nextSlide = () => {
 </template>
 
 <style scoped>
-/* Transisi Slide */
-.slide-fade-enter-active { transition: all 0.5s ease-out; }
-.slide-fade-leave-active { transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1); }
-.slide-fade-enter-from { transform: translateX(50px); opacity: 0; }
-.slide-fade-leave-to { transform: translateX(-50px); opacity: 0; }
+/* Font */
+@font-face {
+    font-family: 'Comic Sans MS';
+    src: local('Comic Sans MS'), local('Comic Sans'), url('https://fonts.cdnfonts.com/s/13677/ComicSansMS3.woff') format('woff');
+}
 
-/* Scrollbar Cantik */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+/* Transisi Kartu (Zoom In/Out) */
+.scale-fade-enter-active,
+.scale-fade-leave-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scale-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+}
+
+.scale-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
+}
+
+/* Scrollbar Imut */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 </style>

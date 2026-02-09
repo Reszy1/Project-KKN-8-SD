@@ -12,7 +12,7 @@ createServer(
         createInertiaApp({
             page,
             render: renderToString,
-            title: (title) => `KKNUMPKU8 | ${title}`,
+            title: (title) => `${title} - KKNUMPKU8`,
             resolve: (name) =>
                 resolvePageComponent(
                     `./pages/${name}.vue`,
