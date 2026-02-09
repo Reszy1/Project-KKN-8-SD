@@ -52,6 +52,9 @@ import { Head, Link } from '@inertiajs/vue3';
 </template>
 
 <style scoped>
+/* AMBIL FONT DARI INTERNET (WAJIB) */
+@import url('https://fonts.cdnfonts.com/css/comic-sans-ms');
+
 /* Animasi Bintang */
 .animate-spin-slow {
     animation: spin 8s linear infinite;
@@ -62,9 +65,8 @@ import { Head, Link } from '@inertiajs/vue3';
     to { transform: rotate(360deg); }
 }
 
-/* Pastikan font Comic Sans ter-load dengan baik */
-@font-face {
-    font-family: 'Comic Sans MS';
-    src: local('Comic Sans MS'), local('Comic Sans'), url('https://fonts.cdnfonts.com/s/13677/ComicSansMS3.woff') format('woff');
+/* Kunci Font secara Global di komponen ini */
+div {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
 }
 </style>
