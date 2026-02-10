@@ -172,6 +172,98 @@ class QuestionSeeder extends Seeder
                 'answer_index' => 1, // Salah
                 'category' => 'brushing'
             ],
+
+            // --- BAGIAN 4: TANTANGAN KESEHATAN REPRODUKSI (BENAR/SALAH) ---
+            [
+                'question' => 'Apa yang terjadi pada remaja putra adalah perubahan suara , tumbuhnya bulu- bulu halus didaerah wajah dan tempat lain , dan timbul jakun',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Mimpi basah merupakan tanda lain pada remaja putra bahwa remaja tersebut mulai akhil baligh atau pubertas',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Menstruasi atau haid merupakan tanda lain dari remaja putri memasuki usia remaja',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Pada masa pubertas akan terjadi perubahan dalam tubuh dan perubahan ini dipengaruhi oleh faktor hormonal dalam tubuh',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Faktor hormonal mempunyai peranan penting untuk proses pertumbuhan dan perkembangan tubuh',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Hormon yang dihasilkan oleh alat reproduksi laki-laki adalah testosteron dan androgen',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Hormon yang dihasilkan oleh alat reproduksi perempuan adalah progesteron',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Tempat terjadinya pembuahan atau pertemuan antara sel telur dengan sel sperma disebut rahim atau uterus',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 1, // Salah (Tuba Fallopi, bukan rahim)
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Istilah yang dikenal dalam kesehatan reproduksi jenis kelamin perempuan disebut vagina',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Salah satu fungsi vagina adalah untuk mengeluarkan cairan atau darah yang dihasilkan dari dalam rahim',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Himen atau selaput dara adalah selaput tipis yang menutupi seluruh vagina bagian luar',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 1, // Salah (Menutupi sebagian liang vagina, bukan seluruh bagian luar/vulva)
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Masa subur pada wanita adalah masa yang sangat mungkin bagi seorang wanita bisa menstruasi',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 1, // Salah (Masa subur = ovulasi/bisa hamil, bukan menstruasi)
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Masa subur pada wanita adalah masa yang mungkin terjadi keputihan',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar (Keputihan fisiologis sering terjadi saat ovulasi)
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Kejadian pertemuan sel telur dan sel sperma disebut fertilisasi',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar
+                'category' => 'reproductive'
+            ],
+            [
+                'question' => 'Seksual pranikah hanya dilakukan 1-2 kali menimbulkan kehamilan dan risiko negatif bagi remaja',
+                'options' => json_encode(['Benar', 'Salah']),
+                'answer_index' => 0, // Benar (Sekali saja bisa hamil)
+                'category' => 'reproductive'
+            ],
         ];
 
         \App\Models\Question::insert($data);

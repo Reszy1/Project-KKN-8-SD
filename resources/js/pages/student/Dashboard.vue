@@ -299,7 +299,7 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
             </div>
 
             <div class="text-center text-gray-400 text-[10px] font-bold tracking-widest uppercase">
-                KKN 2026 KELOMPOK 8 UMPKU
+                KKN 2026 KELOMPOK 8 UMPKU • Generasi Sehat
             </div>
         </div>
 

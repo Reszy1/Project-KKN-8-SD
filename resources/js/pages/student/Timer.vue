@@ -94,41 +94,73 @@ const finishTimer = () => {
 // --- FUNGSI UPLOAD BUKTI ---
 const handleFileChange = (event) => {
     const file = event.target.files[0];
+    
+    // --- TAMBAHAN KODE: Pengecekan Ukuran ---
     if (file) {
+        // Cek jika ukuran lebih dari 5MB (5 * 1024 * 1024)
+        if (file.size > 5 * 1024 * 1024) { 
+            alert("Waduh! Foto terlalu besar (Max 5MB). Coba turunkan resolusi kamera atau pilih foto lain ya! 📸");
+            return; // Batalkan proses
+        }
+
         proofFile.value = file;
         proofPreview.value = URL.createObjectURL(file);
     }
 };
 
 const submitActivity = async () => {
+    // 1. Validasi Foto
     if (!proofFile.value) {
         alert("Eits, foto dulu buktinya ya biar dapat bintang! 📸");
         return;
     }
 
     isUploading.value = true;
+    
+    // 2. BUNGKUS DATA (SESUAIKAN DENGAN CONTROLLER)
     const formData = new FormData();
-    formData.append('student_id', props.student.id);
-    formData.append('type', props.type);
-    formData.append('proof_image', proofFile.value); // Pastikan nama field sesuai controller Laravel
+    formData.append('student_id', parseInt(props.student.id)); 
+    
+    // --- PERBAIKAN DI SINI ---
+    // Controller minta 'type', JANGAN pakai 'activity_type'
+    formData.append('type', props.type); 
+    
+    // Controller minta 'proof', JANGAN pakai 'proof_image'
+    formData.append('proof', proofFile.value); 
+    
+    // Durasi tetap dikirim
+    formData.append('duration', currentConfig.duration); 
+    // Flag bukan kuis
+    formData.append('is_quiz', 0);
 
     try {
-        await axios.post('/activity/store', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+        const response = await axios.post('/activity/store', formData, {
+            headers: { 
+                'Content-Type': 'multipart/form-data' 
+            }
         });
 
-        // Efek Konfeti Kedua (Sukses Kirim)
+        // 3. SUKSES
         confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
         
-        // Tunggu sebentar lalu redirect
         setTimeout(() => {
             alert("Hore! Laporanmu diterima Pak Dokter! 🌟");
-            router.get(`/dashboard/${props.student.id}`);
-        }, 1000);
+            router.visit(`/dashboard/${props.student.id}`); 
+        }, 1500);
 
     } catch (error) {
-        console.error("Gagal kirim", error);
-        alert("Gagal mengirim laporan. Coba lagi ya! (Cek koneksi internet)");
+        console.error("Gagal Upload:", error.response?.data || error);
+        let pesan = "Gagal mengirim laporan.";
+        
+        if (error.response?.status === 422) {
+            pesan = "Data tidak lengkap (Cek Tipe/Foto).";
+            // Debugging: Cek error detail di console browser
+            console.log("Detail Error:", error.response.data.errors);
+        } else if (error.response?.status === 413) {
+            pesan = "Ukuran foto terlalu besar! Maksimal 5MB.";
+        }
+        
+        alert(pesan);
         isUploading.value = false;
     }
 };

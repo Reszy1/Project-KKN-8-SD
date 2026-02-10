@@ -81,7 +81,7 @@ const submit = () => {
         </div>
         
         <div class="absolute bottom-3 text-sky-400/50 font-bold text-[10px] uppercase tracking-widest">
-            KKN Kelompok 8 • UMPKU
+            KKN 2026 KELOMPOK 8 UMPKU • Generasi Sehat
         </div>
 
     </div>

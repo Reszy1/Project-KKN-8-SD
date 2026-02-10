@@ -25,7 +25,7 @@ import { Head, Link } from '@inertiajs/vue3';
             </h1>
             
             <p class="text-base md:text-xl text-sky-800 font-bold mb-8 leading-relaxed max-w-[280px] md:max-w-md mx-auto">
-                Ayo belajar sikat gigi & cuci tangan biar badan jadi kuat! 💪
+                Ayo belajar kesehatan sikat gigi, cuci tangan, dan reproduksi biar badan jadi kuat! 💪
             </p>
 
             <Link
