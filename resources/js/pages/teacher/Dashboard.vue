@@ -12,12 +12,12 @@ const props = defineProps({
 // --- STATE MANAGEMENT ---
 const showClassModal = ref(false);
 const showStudentModal = ref(false);
-const showDetailModal = ref(false); // Modal Detail Siswa
-const showImageModal = ref(false); // Modal Zoom Gambar
+const showDetailModal = ref(false); 
+const showImageModal = ref(false); 
 
 const selectedClass = ref(props.stats.filter_active || '');
-const selectedStudent = ref(null); // Data siswa yang sedang dilihat detailnya
-const selectedImage = ref(''); // URL gambar yang sedang di-zoom
+const selectedStudent = ref(null); 
+const selectedImage = ref(''); 
 
 const formClass = useForm({ name: '' });
 const formStudent = useForm({
@@ -30,7 +30,7 @@ const formStudent = useForm({
 
 // --- HELPER FUNCTIONS ---
 
-// Format Tampilan Aktivitas (Membedakan Kuis vs Timer)
+// PERBAIKAN: Fungsi ini menerima 'activity_type' dari database
 const formatActivityLabel = (type) => {
     if (type === 'brushing') return 'Sikat Gigi';
     if (type === 'handwashing') return 'Cuci Tangan';
@@ -39,20 +39,18 @@ const formatActivityLabel = (type) => {
 };
 
 const formatActivityValue = (log) => {
-    // Cek apakah data valid
     if (log.duration_seconds === null || log.duration_seconds === undefined) {
         return '-';
     }
 
-    // Jika ada foto, asumsikan ini Timer (Menit & Detik)
+    // Jika ada foto, berarti Timer (Menit & Detik)
     if (log.proof_image) {
         const minutes = Math.floor(log.duration_seconds / 60);
         const seconds = log.duration_seconds % 60;
         return `${minutes}m ${seconds}d`;
     } 
     
-    // Jika tidak ada foto, asumsikan ini Kuis (Skor)
-    // Pastikan angka valid
+    // Jika tidak ada foto, berarti Kuis (Skor)
     const score = isNaN(log.duration_seconds) ? 0 : log.duration_seconds;
     return `Skor: ${score}`;
 };
@@ -64,7 +62,7 @@ const getActivityColor = (type) => {
     return 'bg-gray-100 text-gray-700';
 };
 
-// Filter Log Khusus Siswa Terpilih (Untuk Modal Detail)
+// Filter Log Khusus Siswa Terpilih
 const studentHistory = computed(() => {
     if (!selectedStudent.value) return [];
     return props.recentActivities.filter(log => log.student_name === selectedStudent.value.name);
@@ -107,7 +105,7 @@ const deleteClass = (id) => {
 const deleteStudent = (id) => {
     if(confirm('Yakin ingin mengeluarkan siswa ini? Data poin akan hilang.')) {
         router.delete(`/teacher/student/${id}`);
-        showDetailModal.value = false; // Tutup modal jika sedang dibuka
+        showDetailModal.value = false; 
     }
 };
 
@@ -169,10 +167,10 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                         <div v-if="studentHistory.length > 0" class="space-y-3">
                             <div v-for="log in studentHistory" :key="log.id" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                                 <div class="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-lg shadow-sm">
-                                    {{ ['brushing'].includes(log.type) ? '🪥' : (['handwashing'].includes(log.type) ? '🧼' : '📝') }}
+                                    {{ ['brushing'].includes(log.activity_type) ? '🪥' : (['handwashing'].includes(log.activity_type) ? '🧼' : '📝') }}
                                 </div>
                                 <div class="flex-1">
-                                    <p class="font-bold text-sm text-gray-800">{{ formatActivityLabel(log.type) }}</p>
+                                    <p class="font-bold text-sm text-gray-800">{{ formatActivityLabel(log.activity_type) }}</p>
                                     <p class="text-xs text-gray-500">{{ log.time }}</p>
                                 </div>
                                 <div class="font-bold text-sm" :class="log.proof_image ? 'text-blue-600' : 'text-orange-600'">
@@ -300,8 +298,9 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                                     </div>
                                     
                                     <div class="mt-2 flex flex-wrap gap-2">
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-lg border" :class="getActivityColor(log.type)">
-                                            {{ formatActivityLabel(log.type) }}
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-lg border" 
+                                            :class="getActivityColor(log.activity_type)">
+                                            {{ formatActivityLabel(log.activity_type) }}
                                         </span>
                                         <span class="inline-flex items-center gap-1.5 text-xs font-black px-2.5 py-1.5 rounded-lg border bg-gray-50 text-gray-600 border-gray-200">
                                             ⏱️ {{ formatActivityValue(log) }}

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Question; // Pastikan Model di-import
 
 class QuestionSeeder extends Seeder
 {
@@ -13,11 +14,18 @@ class QuestionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Hapus data lama agar tidak duplikat saat di-seed ulang
-        // \App\Models\Question::truncate(); // Uncomment jika ingin menghapus data lama otomatis
+        // 1. Matikan pengecekan Foreign Key sementara (agar bisa truncate tanpa error)
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        // 2. KOSONGKAN TABEL (Hapus semua data lama agar tidak double)
+        Question::truncate();
+
+        // 3. Nyalakan kembali Foreign Key
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // 4. Data Baru
         $data = [
-            // --- BAGIAN 1: SOAL PILIHAN GANDA (ORIGINAL) ---
+            // --- BAGIAN 1: SOAL PILIHAN GANDA ---
             [
                 'question' => 'Berapa kali minimal kita sikat gigi sehari?',
                 'options' => json_encode(['1 Kali', '2 Kali', 'Seminggu Sekali']),
@@ -219,7 +227,7 @@ class QuestionSeeder extends Seeder
             [
                 'question' => 'Tempat terjadinya pembuahan atau pertemuan antara sel telur dengan sel sperma disebut rahim atau uterus',
                 'options' => json_encode(['Benar', 'Salah']),
-                'answer_index' => 1, // Salah (Tuba Fallopi, bukan rahim)
+                'answer_index' => 1, // Salah
                 'category' => 'reproductive'
             ],
             [
@@ -237,19 +245,19 @@ class QuestionSeeder extends Seeder
             [
                 'question' => 'Himen atau selaput dara adalah selaput tipis yang menutupi seluruh vagina bagian luar',
                 'options' => json_encode(['Benar', 'Salah']),
-                'answer_index' => 1, // Salah (Menutupi sebagian liang vagina, bukan seluruh bagian luar/vulva)
+                'answer_index' => 1, // Salah
                 'category' => 'reproductive'
             ],
             [
                 'question' => 'Masa subur pada wanita adalah masa yang sangat mungkin bagi seorang wanita bisa menstruasi',
                 'options' => json_encode(['Benar', 'Salah']),
-                'answer_index' => 1, // Salah (Masa subur = ovulasi/bisa hamil, bukan menstruasi)
+                'answer_index' => 1, // Salah
                 'category' => 'reproductive'
             ],
             [
                 'question' => 'Masa subur pada wanita adalah masa yang mungkin terjadi keputihan',
                 'options' => json_encode(['Benar', 'Salah']),
-                'answer_index' => 0, // Benar (Keputihan fisiologis sering terjadi saat ovulasi)
+                'answer_index' => 0, // Benar
                 'category' => 'reproductive'
             ],
             [
@@ -261,11 +269,12 @@ class QuestionSeeder extends Seeder
             [
                 'question' => 'Seksual pranikah hanya dilakukan 1-2 kali menimbulkan kehamilan dan risiko negatif bagi remaja',
                 'options' => json_encode(['Benar', 'Salah']),
-                'answer_index' => 0, // Benar (Sekali saja bisa hamil)
+                'answer_index' => 0, // Benar
                 'category' => 'reproductive'
             ],
         ];
 
-        \App\Models\Question::insert($data);
+        // 5. Masukkan data bersih
+        Question::insert($data);
     }
 }
