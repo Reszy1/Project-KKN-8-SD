@@ -295,6 +295,13 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
                         <h4 class="text-base md:text-xl font-black text-red-700 mb-1">Basmi Kuman</h4>
                         <p class="text-red-400 text-[10px] md:text-xs font-bold">Game Seru! 🎮</p>
                     </Link>
+
+            <Link :href="`/game-food/${student.id}`" 
+                        class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-green-50 active:bg-green-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-green-100 active:scale-95 transition-transform text-center shadow-sm block decoration-0">
+                        <div class="text-4xl md:text-5xl mb-3 animate-bounce">🥗</div>
+                        <h4 class="text-base md:text-xl font-black text-green-700 mb-1">Panen Sehat</h4>
+                        <p class="text-green-400 text-[10px] md:text-xs font-bold">Tangkap Buahnya! 🍎</p>
+                    </Link>
                     
             <div class="bg-white rounded-[2.5rem] p-5 md:p-8 shadow-xl border-4 border-yellow-100 relative overflow-hidden">
                 <h3 class="text-lg md:text-2xl font-black text-yellow-600 mb-4 flex items-center gap-2 relative z-10 px-1">

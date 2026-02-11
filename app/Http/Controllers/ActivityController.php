@@ -160,6 +160,14 @@ class ActivityController extends Controller
             'student' => $student
         ]);
     }
+
+    public function gameFood($studentId)
+    {
+        $student = Student::findOrFail($studentId);
+        return Inertia::render('student/CatchFood', [
+            'student' => $student
+        ]);
+    }
     /**
      * Menyimpan hasil aktivitas (Foto Bukti & Poin).
      */
