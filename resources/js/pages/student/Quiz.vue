@@ -11,6 +11,7 @@ const props = defineProps({
 });
 
 // Definisi Tema Warna Berdasarkan Tipe Kuis
+// Update: Menghapus tipe 'reproductive' karena sudah menjadi Modal Edukasi di Dashboard
 const theme = computed(() => {
     switch(props.type) {
         case 'brushing': 
@@ -38,19 +39,6 @@ const theme = computed(() => {
                 btnBg: 'bg-green-500 hover:bg-green-600',
                 btnShadow: 'shadow-green-200',
                 textScore: 'text-green-600'
-            };
-        case 'reproductive': 
-            return { 
-                title: '❤️ Kuis Tubuhku', 
-                bgApp: 'bg-pink-50',
-                textTitle: 'text-pink-600',
-                bar: 'bg-pink-500',
-                textCount: 'text-pink-600',
-                optHover: 'hover:bg-pink-500 hover:border-pink-600',
-                iconColor: 'text-pink-600',
-                btnBg: 'bg-pink-500 hover:bg-pink-600',
-                btnShadow: 'shadow-pink-200',
-                textScore: 'text-pink-600'
             };
         default: 
             return { 

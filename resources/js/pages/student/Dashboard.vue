@@ -1,11 +1,13 @@
 <script setup>
 import { Head, router, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import axios from 'axios';
+import confetti from 'canvas-confetti';
 
 const props = defineProps({
     student: Object,
     availableBadges: Array,
-    monthlyProgress: Object, // Format: { "2023-10-01": ["brushing", "handwashing"] }
+    monthlyProgress: Object, 
     currentDate: String,
     todaysMission: Object 
 });
@@ -22,51 +24,45 @@ const startDay = getFirstDayOfMonth(today.getFullYear(), today.getMonth());
 
 const calendarDays = computed(() => {
     let days = [];
-    // Spacer untuk hari sebelum tanggal 1
-    for (let i = 0; i < startDay; i++) {
-        days.push({ date: null });
-    }
-    // Isi Tanggal
+    for (let i = 0; i < startDay; i++) { days.push({ date: null }); }
     for (let i = 1; i <= daysInMonth; i++) {
         const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
         const activities = props.monthlyProgress[dateString] || [];
         
-        // Tentukan Status Hari Ini untuk Pewarnaan
-        let status = 'empty'; // Belum ada data / masa depan
-        if (activities.length === 2) status = 'perfect'; // Lengkap
-        else if (activities.length === 1) status = 'partial'; // Kurang 1
-        else if (dateString < props.currentDate && activities.length === 0) status = 'missed'; // Terlewat/Bolong
+        let status = 'empty';
+        if (activities.length === 2) status = 'perfect';
+        else if (activities.length === 1) status = 'partial';
+        else if (dateString < props.currentDate && activities.length === 0) status = 'missed';
 
-        days.push({
-            date: i,
-            fullDate: dateString,
-            activities: activities,
-            status: status
-        });
+        days.push({ date: i, fullDate: dateString, activities: activities, status: status });
     }
     return days;
 });
 
-// --- LOGIKA STATISTIK BULANAN (Untuk Pengawasan) ---
 const monthlyStats = computed(() => {
-    let brushing = 0;
-    let handwashing = 0;
-    let perfectDays = 0;
-
+    let brushing = 0, handwashing = 0, perfectDays = 0;
     Object.values(props.monthlyProgress).forEach(acts => {
         if (acts.includes('brushing')) brushing++;
         if (acts.includes('handwashing')) handwashing++;
         if (acts.length === 2) perfectDays++;
     });
-
     return { brushing, handwashing, perfectDays };
 });
 
-// State Modal
-const showGuide = ref(false);         // Modal Bantuan
-const showNutritionModal = ref(false); // Modal Gizi (Baru)
+// --- STATE MODAL ---
+const showGuide = ref(false);
+const showNutritionModal = ref(false);
+const showBodyModal = ref(false); 
+const showVideoModal = ref(false); // <--- State Modal Video
+const activeVideo = ref(''); // <--- Video yang sedang diputar
 
-// --- PROGRESS BAR LEVEL ---
+// Daftar Video Edukasi
+const videoList = [
+    { title: 'Cara Sikat Gigi', url: 'https://ik.imagekit.io/w1beqfjn8/Animation%20Gosok%20Gigi-KKN.mp4', icon: '🪥', color: 'bg-blue-50 text-blue-700 border-blue-100' },
+    { title: 'Cuci Tangan Pakai Sabun', url: 'https://ik.imagekit.io/w1beqfjn8/Animasi%20AI%20Cuci%20Tangan.mp4', icon: '🧼', color: 'bg-green-50 text-green-700 border-green-100' },
+    { title: 'Jaga Tubuhmu', url: 'https://ik.imagekit.io/w1beqfjn8/Animasi%20AI%20Kespro.mp4', icon: '🛡️', color: 'bg-pink-50 text-pink-700 border-pink-100' }
+];
+
 const nextBadge = computed(() => {
     return props.availableBadges.find(b => props.student.total_points < b.required_points) || props.availableBadges[props.availableBadges.length - 1];
 });
@@ -74,9 +70,13 @@ const progressPercent = computed(() => {
     return Math.min((props.student.total_points / nextBadge.value.required_points) * 100, 100);
 });
 
-// Navigasi
+// --- NAVIGASI & AKSI ---
 const mulaiMain = (tipe) => { router.get(`/timer/${props.student.id}/${tipe}`); };
 const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); };
+
+const selesaiMembaca = async () => {
+    // Fungsi ini dikosongkan karena Modal Tubuhku sekarang hanya tombol Close (X)
+};
 </script>
 
 <template>
@@ -273,9 +273,15 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
                         <p class="text-teal-400 text-[10px] md:text-xs font-bold">Lawan kuman!</p>
                     </div>
 
-                    <div @click="mulaiKuis('reproductive')" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-pink-50 active:bg-pink-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-pink-100 active:scale-95 transition-transform text-center shadow-sm">
+                    <div @click="showVideoModal = true" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-red-50 active:bg-red-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-red-100 active:scale-95 transition-transform text-center shadow-sm">
+                        <div class="text-4xl md:text-5xl mb-3">🎬</div>
+                        <h4 class="text-base md:text-xl font-black text-red-700 mb-1">Video Seru</h4>
+                        <p class="text-red-400 text-[10px] md:text-xs font-bold">Nonton animasi!</p>
+                    </div>
+
+                    <div @click="showBodyModal = true" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-pink-50 active:bg-pink-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-pink-100 active:scale-95 transition-transform text-center shadow-sm">
                         <div class="text-4xl md:text-5xl mb-3">❤️</div>
-                        <h4 class="text-base md:text-xl font-black text-pink-700 mb-1">Kuis Tubuh</h4>
+                        <h4 class="text-base md:text-xl font-black text-pink-700 mb-1">Tubuhku</h4>
                         <p class="text-pink-400 text-[10px] md:text-xs font-bold">Jaga tubuhmu!</p>
                     </div>
 
@@ -287,22 +293,20 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
 
                 </div>
                 
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <Link :href="`/game/${student.id}`" class="bg-red-50 p-6 rounded-[2rem] border-2 border-red-100 text-center shadow-sm hover:scale-105 transition-transform block decoration-0">
+                        <div class="text-5xl mb-2 animate-pulse">🦠</div>
+                        <h4 class="text-xl font-black text-red-700">Basmi Kuman</h4>
+                        <p class="text-red-400 font-bold text-xs">Pukul kuman nakal!</p>
+                    </Link>
+                    <Link :href="`/game-food/${student.id}`" class="bg-green-50 p-6 rounded-[2rem] border-2 border-green-100 text-center shadow-sm hover:scale-105 transition-transform block decoration-0">
+                        <div class="text-5xl mb-2 animate-bounce">🥗</div>
+                        <h4 class="text-xl font-black text-green-700">Panen Sehat</h4>
+                        <p class="text-green-400 font-bold text-xs">Tangkap buah segar!</p>
+                    </Link>
+                </div>
             </div>
 
-            <Link :href="`/game/${student.id}`" 
-                        class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-red-50 active:bg-red-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-red-100 active:scale-95 transition-transform text-center shadow-sm block decoration-0">
-                        <div class="text-4xl md:text-5xl mb-3 animate-pulse">🦠</div>
-                        <h4 class="text-base md:text-xl font-black text-red-700 mb-1">Basmi Kuman</h4>
-                        <p class="text-red-400 text-[10px] md:text-xs font-bold">Game Seru! 🎮</p>
-                    </Link>
-
-            <Link :href="`/game-food/${student.id}`" 
-                        class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-green-50 active:bg-green-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-green-100 active:scale-95 transition-transform text-center shadow-sm block decoration-0">
-                        <div class="text-4xl md:text-5xl mb-3 animate-bounce">🥗</div>
-                        <h4 class="text-base md:text-xl font-black text-green-700 mb-1">Panen Sehat</h4>
-                        <p class="text-green-400 text-[10px] md:text-xs font-bold">Tangkap Buahnya! 🍎</p>
-                    </Link>
-                    
             <div class="bg-white rounded-[2.5rem] p-5 md:p-8 shadow-xl border-4 border-yellow-100 relative overflow-hidden">
                 <h3 class="text-lg md:text-2xl font-black text-yellow-600 mb-4 flex items-center gap-2 relative z-10 px-1">
                     <span>🏆</span> Koleksi Lencana
@@ -331,108 +335,94 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
 
         <div v-if="showGuide" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showGuide = false"></div>
-            <div class="bg-white w-full max-w-md rounded-[2.5rem] p-6 md:p-8 shadow-2xl border-4 border-green-100 relative animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+            <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-6 md:p-8 shadow-2xl border-4 border-green-100 relative animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
                 <div class="text-center mb-6">
                     <div class="text-5xl mb-2">📢</div>
                     <h2 class="text-2xl font-black text-green-600">Panduan Orang Tua</h2>
-                    <p class="text-gray-400 font-bold text-xs">Cara memantau kemajuan anak:</p>
+                    <p class="text-gray-500 font-bold text-xs mt-1">Sinergi Sekolah & Rumah untuk Generasi Sehat</p>
                 </div>
-                <div class="overflow-y-auto custom-scrollbar space-y-4 pr-2 flex-1">
-                    <div class="bg-blue-50 p-4 rounded-2xl flex gap-3 items-center border border-blue-100">
-                        <div class="text-2xl">📅</div>
-                        <div>
-                            <h4 class="font-black text-blue-700 text-sm">Cek Kalender</h4>
-                            <p class="text-gray-600 text-xs font-medium">Kotak <strong>Hijau</strong> artinya anak rajin. Kotak <strong>Merah</strong> artinya lupa.</p>
-                        </div>
+                <div class="overflow-y-auto custom-scrollbar space-y-4 pr-2 flex-1 text-sm text-gray-700">
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                        <div class="flex items-center gap-3 mb-2"><span class="text-2xl">📅</span><h4 class="font-black text-blue-800">Monitoring Konsistensi Harian</h4></div>
+                        <p class="leading-relaxed text-xs md:text-sm text-blue-900/80 text-justify">
+                            Kalender aktivitas dirancang untuk membangun habituasi PHBS. Indikator warna membantu Anda memantau kedisiplinan anak:
+                            <br>• <strong>Hijau (Lengkap):</strong> Anak telah menuntaskan seluruh misi kebersihan hari ini.
+                            <br>• <strong>Kuning (Parsial):</strong> Ada aktivitas yang terlewat, mohon diingatkan.
+                            <br>• <strong>Merah/Abu (Absen):</strong> Tidak ada aktivitas tercatat. Lakukan evaluasi bersama anak.
+                        </p>
                     </div>
-                    <div class="bg-orange-50 p-4 rounded-2xl flex gap-3 items-center border border-orange-100">
-                        <div class="text-2xl">🏆</div>
-                        <div>
-                            <h4 class="font-black text-orange-700 text-sm">Target Bulanan</h4>
-                            <p class="text-gray-600 text-xs font-medium">Usahakan "Hari Sempurna" semakin banyak!</p>
-                        </div>
+                    <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                        <div class="flex items-center gap-3 mb-2"><span class="text-2xl">🏆</span><h4 class="font-black text-orange-800">Sistem Reward & Motivasi</h4></div>
+                        <p class="leading-relaxed text-xs md:text-sm text-orange-900/80 text-justify">
+                            Lencana bukan sekadar hiasan, melainkan apresiasi atas ketekunan jangka panjang. Dorong anak untuk mencapai target poin guna membuka lencana baru. Ini mengajarkan konsep <em>delayed gratification</em> (menunda kesenangan demi hasil lebih besar).
+                        </p>
                     </div>
-                    <div class="bg-green-50 p-4 rounded-2xl flex gap-3 items-center border border-green-100">
-                        <div class="text-2xl">📱</div>
-                        <div>
-                            <h4 class="font-black text-green-700 text-sm">Bantu Klik</h4>
-                            <p class="text-gray-600 text-xs font-medium">Ingatkan anak untuk klik tombol "MULAI" setelah kegiatan.</p>
-                        </div>
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                        <div class="flex items-center gap-3 mb-2"><span class="text-2xl">🤝</span><h4 class="font-black text-purple-800">Peran Aktif Orang Tua</h4></div>
+                        <p class="leading-relaxed text-xs md:text-sm text-purple-900/80 text-justify">
+                            Dampingi anak saat mengisi aktivitas, terutama saat mengunggah foto bukti sikat gigi atau cuci tangan. Validasi Anda adalah kunci kejujuran dan semangat mereka.
+                        </p>
                     </div>
                 </div>
-                <button @click="showGuide = false" class="mt-6 w-full bg-green-500 text-white font-black py-3 rounded-2xl shadow-[0_4px_0_0_#15803d] active:shadow-none active:translate-y-1 transition-all">SIAP, SAYA MENGERTI! 👌</button>
+                <button @click="showGuide = false" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-black py-3 rounded-2xl shadow-[0_4px_0_0_#15803d] active:translate-y-1 transition-all">SAYA MENGERTI</button>
             </div>
         </div>
 
         <div v-if="showNutritionModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showNutritionModal = false"></div>
-            
             <div class="bg-white w-full max-w-md rounded-[2.5rem] p-6 md:p-8 shadow-2xl border-4 border-orange-100 relative animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
-                
-                <div class="text-center mb-4">
-                    <div class="text-5xl mb-2">🍽️</div>
-                    <h2 class="text-2xl font-black text-orange-600">Isi Piringku Sekali Makan</h2>
-                    <p class="text-gray-400 font-bold text-xs">Panduan Makan Sehat Kemenkes RI</p>
-                </div>
-
+                <button @click="showNutritionModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl font-bold transition-colors z-10">✕</button>
+                <div class="text-center mb-4"><div class="text-5xl mb-2">🍽️</div><h2 class="text-2xl font-black text-orange-600">Panduan Isi Piringku</h2><p class="text-xs text-gray-500 font-bold">Sekali Makan (Sumber: Kemenkes RI)</p></div>
                 <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-4">
-                    
-                    <div class="relative w-48 h-48 mx-auto bg-gray-100 rounded-full border-4 border-gray-200 overflow-hidden shadow-inner flex flex-wrap">
-                        <div class="w-1/2 h-full bg-yellow-100 flex flex-col justify-center items-center p-2 border-r border-white">
-                            <span class="text-xl">🍚</span>
-                            <span class="text-[8px] font-bold text-yellow-700 text-center">Makanan Pokok<br>(Nasi/Kentang)</span>
-                        </div>
-                        <div class="w-1/2 h-full flex flex-col">
-                            <div class="h-1/2 bg-green-100 flex flex-col justify-center items-center border-b border-white">
-                                <span class="text-xl">🥦</span>
-                                <span class="text-[8px] font-bold text-green-700">Sayuran</span>
-                            </div>
-                            <div class="h-1/2 flex">
-                                <div class="w-1/2 bg-amber-100 flex flex-col justify-center items-center border-r border-white">
-                                    <span class="text-lg">🍗</span>
-                                    <span class="text-[6px] font-bold text-amber-800">Lauk</span>
-                                </div>
-                                <div class="w-1/2 bg-red-100 flex flex-col justify-center items-center">
-                                    <span class="text-lg">🍎</span>
-                                    <span class="text-[6px] font-bold text-red-700">Buah</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                        <h4 class="font-black text-orange-800 text-sm mb-2 border-b border-orange-200 pb-1">1/2 Piring: Makanan Pokok & Lauk</h4>
+                        <div class="space-y-2"><div class="flex items-start gap-2 text-xs text-gray-700"><span class="text-lg">🍚</span><div><strong>Makanan Pokok (2/3 bagian):</strong> Nasi, Jagung, Ubi, Singkong. Sumber tenaga.</div></div><div class="flex items-start gap-2 text-xs text-gray-700"><span class="text-lg">🍗</span><div><strong>Lauk Pauk (1/3 bagian):</strong> Ikan, Ayam, Telur, Tahu, Tempe. Zat pembangun tubuh.</div></div></div>
                     </div>
-
-                    <div class="space-y-2">
-                        <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex items-center gap-3">
-                            <span class="text-xl">🍚</span>
-                            <div class="text-xs text-gray-600 font-medium">
-                                <strong>Makanan Pokok:</strong> Sumber tenaga (Nasi, Jagung, Ubi).
-                            </div>
-                        </div>
-                        <div class="bg-amber-50 p-3 rounded-xl border border-amber-100 flex items-center gap-3">
-                            <span class="text-xl">🍗</span>
-                            <div class="text-xs text-gray-600 font-medium">
-                                <strong>Lauk Pauk:</strong> Zat pembangun (Telur, Ikan, Tahu, Tempe).
-                            </div>
-                        </div>
-                        <div class="bg-green-50 p-3 rounded-xl border border-green-100 flex items-center gap-3">
-                            <span class="text-xl">🥦</span>
-                            <div class="text-xs text-gray-600 font-medium">
-                                <strong>Sayur & Buah:</strong> Vitamin biar nggak gampang sakit!
-                            </div>
-                        </div>
-                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center gap-3">
-                            <span class="text-xl">💧</span>
-                            <div class="text-xs text-gray-600 font-medium">
-                                <strong>Air Putih:</strong> Minum 8 gelas sehari ya! Kurangi manis-manis.
-                            </div>
-                        </div>
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                        <h4 class="font-black text-green-800 text-sm mb-2 border-b border-green-200 pb-1">1/2 Piring: Sayur & Buah</h4>
+                        <div class="space-y-2"><div class="flex items-start gap-2 text-xs text-gray-700"><span class="text-lg">🥦</span><div><strong>Sayuran (2/3 bagian):</strong> Bayam, Wortel, Kangkung. Kaya serat & vitamin.</div></div><div class="flex items-start gap-2 text-xs text-gray-700"><span class="text-lg">🍎</span><div><strong>Buah-buahan (1/3 bagian):</strong> Pisang, Pepaya, Jeruk. Penangkal penyakit alami.</div></div></div>
                     </div>
+                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center"><p class="text-xs text-blue-800 font-bold">💧 Jangan Lupa: Minum Air Putih 8 Gelas/Hari, Cuci Tangan Pakai Sabun, & Rutin Olahraga!</p></div>
+                </div>
+            </div>
+        </div>
 
+        <div v-if="showBodyModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showBodyModal = false"></div>
+            <div class="bg-white w-full max-w-md rounded-[2.5rem] p-6 md:p-8 shadow-2xl border-4 border-pink-100 relative animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+                <button @click="showBodyModal = false" class="absolute top-5 right-5 text-gray-400 hover:text-red-500 text-3xl font-black transition-colors z-50 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm border border-gray-100">✕</button>
+                <div class="text-center mb-4"><div class="text-5xl mb-2">🛡️</div><h2 class="text-2xl font-black text-pink-600">Jaga Tubuhku</h2><p class="text-gray-400 font-bold text-xs">Edukasi Kesehatan Reproduksi Dini</p></div>
+                <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-3 pb-4">
+                    <div class="bg-pink-50 p-4 rounded-2xl border border-pink-100"><div class="flex items-center gap-2 mb-2"><span class="text-2xl">👙</span><h4 class="font-black text-pink-700 text-sm">Aturan Pakaian Dalam</h4></div><p class="text-xs text-gray-700 font-medium leading-relaxed text-justify">Bagian tubuh yang tertutup baju renang (Dada, Alat Kelamin, Pantat) adalah <strong>AREA PRIBADI</strong>. <br>🚫 <strong>DILARANG KERAS</strong> disentuh atau dilihat orang lain, kecuali:<br>1. Diri sendiri saat mandi.<br>2. Orang tua saat memandikan.<br>3. Dokter saat memeriksa (didampingi Orang Tua).</p></div>
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100"><div class="flex items-center gap-2 mb-2"><span class="text-2xl">✋</span><h4 class="font-black text-purple-700 text-sm">Sentuhan Aman vs Tidak</h4></div><ul class="text-xs text-gray-700 font-medium space-y-2 ml-1 text-justify"><li>✅ <strong>Sentuhan Boleh:</strong> Bersalaman, 'Tos' dengan teman, Tepuk bahu semangat.</li><li>❌ <strong>Sentuhan TIDAK Boleh:</strong> Menyentuh area pribadi, memaksa mencium, atau meminta merahasiakan sentuhan.</li><li class="bg-white p-3 rounded-lg border border-purple-200 text-purple-700 font-bold text-center mt-2 shadow-sm">"Jika ada yang memaksa, KATAKAN TIDAK, LARI, dan LAPOR ke Guru/Ortu!"</li></ul></div>
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100"><div class="flex items-center gap-2 mb-2"><span class="text-2xl">✨</span><h4 class="font-black text-blue-700 text-sm">Kebersihan Organ Reproduksi</h4></div><ul class="text-xs text-gray-700 font-medium space-y-1 ml-1 list-disc pl-3 text-justify"><li>Ganti celana dalam minimal 2x sehari (Pagi & Sore/setelah mandi).</li><li>Cara Cebok yang Benar: Basuh dari arah <strong>DEPAN ke BELAKANG</strong> (bukan sebaliknya) agar kuman dari anus tidak masuk ke alat kelamin.</li><li>Pastikan area kering (lap dengan tisu/handuk) sebelum memakai celana agar tidak berjamur.</li></ul></div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showVideoModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="showVideoModal = false"></div>
+            <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-6 shadow-2xl relative animate-in fade-in zoom-in duration-300 border-4 border-sky-100">
+                <button @click="showVideoModal = false; activeVideo = ''" class="absolute -top-12 right-0 md:-right-12 text-white text-4xl font-black hover:scale-110 transition-transform">✕</button>
+                
+                <div v-if="!activeVideo">
+                    <h2 class="text-2xl font-black text-center mb-6 text-sky-600 uppercase tracking-wide">Pilih Video 🎥</h2>
+                    <div class="space-y-3">
+                        <button v-for="(vid, index) in videoList" :key="index" @click="activeVideo = vid.url" 
+                            class="w-full p-4 rounded-2xl flex items-center gap-4 transition-all hover:scale-105 border-b-4 border-transparent hover:border-black/10 shadow-sm active:scale-95"
+                            :class="vid.color">
+                            <span class="text-4xl filter drop-shadow-sm">{{ vid.icon }}</span>
+                            <span class="font-black text-lg">{{ vid.title }}</span>
+                        </button>
+                    </div>
                 </div>
 
-                <button @click="showNutritionModal = false" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-3 rounded-2xl shadow-[0_4px_0_0_#c2410c] active:shadow-none active:translate-y-1 transition-all">
-                    SIAP MAKAN SEHAT! 🥗
-                </button>
-
+                <div v-else>
+                    <div class="aspect-video w-full overflow-hidden rounded-2xl border-4 border-sky-100 bg-black shadow-inner mb-4">
+                        <iframe class="w-full h-full" :src="activeVideo + '?autoplay=1'" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <button @click="activeVideo = ''" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-black py-3 rounded-xl transition-colors">⬅️ PILIH VIDEO LAIN</button>
+                </div>
             </div>
         </div>
 

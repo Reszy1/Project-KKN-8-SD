@@ -13,7 +13,8 @@ const slides = [
         text: "text-purple-600",
         btnColor: "bg-purple-500 hover:bg-purple-600 shadow-[0_4px_0_0_#7e22ce]",
         content: [
-            "Apa itu PHBS? Kebiasaan baik sehari-hari agar tubuh sehat, kuat, dan tidak mudah sakit.",
+            "Apa itu PHBS?",
+            "PHBS (Perilaku Hidup Bersih dan Sehat) adalah kebiasaan baik sehari-hari agar tubuh kita sehat, kuat, dan tidak mudah sakit.",
             "Contoh PHBS:",
             "👉 Cuci tangan pakai sabun",
             "👉 Gosok gigi",
@@ -21,7 +22,7 @@ const slides = [
             "👉 Buang sampah pada tempatnya",
             "Rasulullah ﷺ bersabda:",
             "\"Kebersihan adalah sebagian dari iman\" (HR. Muslim).",
-            "Kalau kita hidup bersih, berarti kita anak yang beriman dan disayang Allah ❤️"
+            "\"Kalau kita hidup bersih, berarti kita anak yang beriman dan disayang Allah\" ❤️"
         ],
         source: "Sumber: Hadits HR. Muslim"
     },
@@ -34,19 +35,23 @@ const slides = [
         text: "text-green-600",
         btnColor: "bg-green-500 hover:bg-green-600 shadow-[0_4px_0_0_#15803d]",
         content: [
-            "Kenapa harus cuci tangan? Agar terhindar dari Sakit Perut, Diare, dan Cacingan!",
-            "Kapan Wajib Cuci Tangan?",
-            "✅ Sebelum & sesudah makan.",
-            "✅ Sesudah buang air besar/kecil.",
-            "✅ Sesudah bermain & pegang hewan.",
-            "✅ Sesudah batuk/bersin.",
+            "Apa itu mencuci tangan?",
+            "Membersihkan tangan dan jari-jari dengan air mengalir dan sabun.",
+            "Kenapa harus cuci tangan?",
+            "Karena di tangan banyak kuman tak terlihat. Jika tidak, bisa menyebabkan: Sakit perut, Diare (mencret), & Cacingan.",
+            "Kapan Harus Cuci Tangan? 🕒",
+            "✅ Sebelum & setelah makan.",
+            "✅ Sebelum menyajikan makanan & pegang bahan mentah.",
+            "✅ Sesudah BAB & BAK (Buang Air).",
+            "✅ Sesudah bermain & menyentuh hewan.",
+            "✅ Sesudah batuk/bersin & buang sampah.",
             "6 Langkah Cuci Tangan (WHO):",
-            "1. Gosok antar telapak tangan.",
+            "1. Tuang sabun, gosok antar telapak tangan.",
             "2. Gosok punggung tangan.",
             "3. Bersihkan sela-sela jari.",
-            "4. Kunci jari-jari (gerakan mengunci).",
-            "5. Putar ibu jari dalam genggaman.",
-            "6. Putar ujung jari di telapak tangan."
+            "4. Usap ujung jari (gerakan mengunci).",
+            "5. Ibu jari digenggam lalu gosok memutar.",
+            "6. Gosok ujung jari di telapak tangan."
         ],
         source: "Sumber: Panduan WHO"
     },
@@ -98,23 +103,29 @@ const slides = [
     },
     {
         id: 5,
-        title: "Makan Sehat, Tubuh Kuat! 🍱",
-        icon: "🥗",
+        title: "Gizi: Rahasia Camilan Pahlawan! 🦸‍♂️",
+        icon: "🍎",
         color: "bg-orange-500",
         bg: "bg-orange-50",
         text: "text-orange-600",
         btnColor: "bg-orange-500 hover:bg-orange-600 shadow-[0_4px_0_0_#ea580c]",
         content: [
-            "Supaya tumbuh tinggi & pintar, perut harus diisi makanan bergizi (Isi Piringku).",
-            "Dalam 1 Piring Makan Harus Ada:",
-            "🍚 Makanan Pokok (Nasi/Kentang) = Sumber Tenaga.",
-            "🍗 Lauk Pauk (Telur/Ikan/Tahu) = Zat Pembangun Tubuh.",
-            "🥦 Sayur & Buah = Vitamin biar nggak gampang sakit.",
-            "Pantangan:",
-            "❌ Jangan sering makan mie instan & ciki-ciki.",
-            "❌ Kurangi minum es manis, perbanyak Air Putih (8 gelas/hari)."
+            "Tahukah kamu? Makanan yang kita pilih bisa jadi 'Pahlawan' atau 'Monster' bagi tubuh kita!",
+            "1. Makanan Pembersih (Self-Cleansing) 🧹",
+            "Buah renyah (Apel 🍎, Bengkuang, Pepaya) & Sayur (Wortel 🥕) mengandung banyak SERAT dan AIR.",
+            "👉 Seratnya menyapu sisa makanan di sela gigi.",
+            "👉 Airnya membilas kuman jahat secara alami.",
+            "2. Makanan Semen Kuat (Zat Pembangun) 🏗️",
+            "Tubuh butuh Kalsium & Fosfor agar tulang dan gigi sekuat tembok beton!",
+            "👉 Sumber Terbaik: Susu 🥛, Keju 🧀, Ikan Teri 🐟, dan Telur 🥚.",
+            "3. Waspada Camilan Lengket (Monster Gula) 👾",
+            "Permen, Cokelat, & Biskuit mengandung Gula Lengket yang disukai kuman.",
+            "👉 Tips Gizi: Kalau mau makan manis, makanlah bersamaan jam makan besar (nasi), JANGAN dijadikan camilan sepanjang hari.",
+            "4. Minuman Pintar 💧",
+            "❌ Kurangi Soda & Susu Kental Manis (Gula terlalu tinggi!).",
+            "✅ Pilih Air Putih atau Susu Segar. Air putih menetralkan asam jahat di mulut."
         ],
-        source: "Sumber: Kemenkes RI (Gerakan Isi Piringku)"
+        source: "Sumber: Kemenkes RI, IDAI, & WHO"
     }
 ];
 
@@ -142,7 +153,7 @@ const isHeaderLine = (line) => {
 <template>
     <Head title="Belajar Dulu Yuk!" />
 
-    <div class="h-[100dvh] w-full flex flex-col items-center justify-between font-['Comic_Sans_MS',_'Comic_Sans',_cursive] transition-colors duration-700 overflow-hidden relative"
+    <div class="font-comic h-[100dvh] w-full flex flex-col items-center justify-between transition-colors duration-700 overflow-hidden relative"
         :class="slides[currentSlide].bg">
 
         <div class="w-full px-4 pt-4 md:pt-6 mb-2 flex-shrink-0 z-20">
@@ -169,9 +180,11 @@ const isHeaderLine = (line) => {
                     </h1>
 
                     <div class="bg-gray-50 rounded-xl p-4 w-full text-left border border-gray-100 shadow-inner flex-1 overflow-y-auto custom-scrollbar mb-4">
-                        <ul class="space-y-1"> <li v-for="(line, idx) in slides[currentSlide].content" :key="idx" 
+                        <ul class="space-y-1"> 
+                            <li v-for="(line, idx) in slides[currentSlide].content" :key="idx" 
                                 class="text-slate-600 font-medium text-sm md:text-base leading-relaxed flex items-start gap-2"
                                 :class="{ 'mt-3 border-t border-dashed border-gray-200 pt-2': isHeaderLine(line) && idx > 0 }">
+                                
                                 <span v-if="!line.match(/^\d\./) && !line.startsWith('👉') && !line.startsWith('✅') && !line.startsWith('❌') && !line.includes('?') && !line.includes(':') && idx > 0" 
                                       class="text-orange-400 mt-0.5 flex-shrink-0">👉</span>
                                 
@@ -229,10 +242,12 @@ const isHeaderLine = (line) => {
 </template>
 
 <style scoped>
-/* Font */
-@font-face {
-    font-family: 'Comic Sans MS';
-    src: local('Comic Sans MS'), local('Comic Sans'), url('https://fonts.cdnfonts.com/s/13677/ComicSansMS3.woff') format('woff');
+/* 1. GUNAKAN IMPORT YANG SAMA DENGAN WELCOME.VUE */
+@import url('https://fonts.cdnfonts.com/css/comic-sans-ms');
+
+/* 2. PAKSA FONT AGAR TIDAK JADI LATIN/SERIF DI HP */
+.font-comic {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
 }
 
 /* Transisi Kartu (Zoom In/Out) */

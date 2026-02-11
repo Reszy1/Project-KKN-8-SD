@@ -12,8 +12,12 @@ return new class extends Migration
    public function up()
     {
         Schema::table('activity_logs', function (Blueprint $table) {
-            // Tambahkan kolom is_quiz, default 0 (artinya bukan kuis/praktik biasa)
-            $table->boolean('is_quiz')->default(0)->after('activity_type');
+            // Menambahkan kolom is_quiz (default 0/false)
+            $table->boolean('is_quiz')->default(0)->after('proof_image');
+            
+            // JAGA-JAGA: Pastikan kolom proof_image boleh kosong (nullable)
+            // Kita ubah kolom yang sudah ada agar menerima nilai NULL
+            $table->string('proof_image')->nullable()->change();
         });
     }
 

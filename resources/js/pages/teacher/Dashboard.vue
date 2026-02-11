@@ -7,7 +7,7 @@ const props = defineProps({
     recentActivities: Array,
     students: Array,
     classList: Array,
-    analysis: Array // <--- DATA ANALISA DARI CONTROLLER
+    analysis: Array 
 });
 
 // --- STATE MANAGEMENT ---
@@ -29,43 +29,47 @@ const formStudent = useForm({
     password: '123'
 });
 
-// --- HELPER FUNCTIONS ---
+// --- HELPER FUNCTIONS (DIAGRAM) ---
+const CIRCUMFERENCE = 251.32;
 
-// 1. Helper untuk Diagram Lingkaran (Analisa)
-const calculateDashOffset = (score, radius) => {
-    const circumference = 2 * Math.PI * radius;
-    const value = score || 0;
-    return circumference - (value / 100) * circumference;
+const calculateDashOffset = (score) => {
+    const value = score || 0; 
+    return CIRCUMFERENCE - (value / 100) * CIRCUMFERENCE;
 };
 
 const getScoreCategory = (score) => {
-    if (!score) return { label: 'Belum Ada Data', color: 'text-gray-400' };
-    if (score >= 80) return { label: 'Sangat Paham', color: 'text-green-600' };
-    if (score >= 60) return { label: 'Cukup Paham', color: 'text-yellow-600' };
+    if (score === null || score === undefined) return { label: 'Belum Ada Data', color: 'text-gray-400' };
+    const numScore = Math.round(score);
+    if (numScore >= 80) return { label: 'Sangat Paham', color: 'text-green-600' };
+    if (numScore >= 60) return { label: 'Cukup Paham', color: 'text-yellow-600' };
     return { label: 'Perlu Bimbingan', color: 'text-red-500' };
 };
 
-// 2. Helper Format Label Aktivitas
+// --- HELPER FUNCTIONS (AKTIVITAS) ---
 const formatActivityLabel = (type) => {
     if (type === 'brushing') return 'Sikat Gigi';
     if (type === 'handwashing') return 'Cuci Tangan';
-    if (type === 'reproductive') return 'Kuis Tubuhku';
+    if (type === 'reproductive') return 'Edukasi Tubuh';
     return 'Aktivitas';
 };
 
 const formatActivityValue = (log) => {
-    if (log.duration_seconds === null || log.duration_seconds === undefined) return '-';
-
-    // Jika ada foto, berarti Timer (Menit & Detik)
+    if (log.duration_seconds === null) return '-';
+    
+    // Jika ada foto = Timer (Menit/Detik)
     if (log.proof_image) {
         const minutes = Math.floor(log.duration_seconds / 60);
         const seconds = log.duration_seconds % 60;
         return `${minutes}m ${seconds}d`;
     } 
     
-    // Jika tidak ada foto, berarti Kuis (Skor)
-    const score = isNaN(log.duration_seconds) ? 0 : log.duration_seconds;
-    return `Skor: ${score}`;
+    // Jika Edukasi Tubuh (Tampilkan Status Selesai)
+    if (log.activity_type === 'reproductive') {
+        return 'Selesai Baca ✅';
+    }
+
+    // Jika Kuis Lainnya (Tampilkan Skor)
+    return `Nilai: ${Math.round(log.duration_seconds)}`;
 };
 
 const getActivityColor = (type) => {
@@ -75,63 +79,23 @@ const getActivityColor = (type) => {
     return 'bg-gray-100 text-gray-700';
 };
 
-// Filter Log Khusus Siswa Terpilih (Untuk Modal Detail)
 const studentHistory = computed(() => {
     if (!selectedStudent.value) return [];
     return props.recentActivities.filter(log => log.student_name === selectedStudent.value.name);
 });
 
 // --- ACTIONS ---
-
-const openStudentDetail = (student) => {
-    selectedStudent.value = student;
-    showDetailModal.value = true;
-};
-
-const openImageZoom = (imageUrl) => {
-    selectedImage.value = imageUrl;
-    showImageModal.value = true;
-};
-
-const submitClass = () => {
-    formClass.post('/teacher/class', {
-        onSuccess: () => {
-            showClassModal.value = false;
-            formClass.reset();
-        }
-    });
-};
-
-const submitStudent = () => {
-    formStudent.post('/teacher/student', {
-        onSuccess: () => {
-            showStudentModal.value = false;
-            formStudent.reset();
-        }
-    });
-};
-
-const deleteClass = (id) => {
-    if(confirm('Yakin hapus kelas ini? Data siswa di dalamnya juga akan terhapus.')) {
-        router.delete(`/teacher/class/${id}`);
-    }
-};
-
-const deleteStudent = (id) => {
-    if(confirm('Yakin ingin mengeluarkan siswa ini? Data poin akan hilang.')) {
-        router.delete(`/teacher/student/${id}`);
-        showDetailModal.value = false; 
-    }
-};
-
+const openStudentDetail = (student) => { selectedStudent.value = student; showDetailModal.value = true; };
+const openImageZoom = (imageUrl) => { selectedImage.value = imageUrl; showImageModal.value = true; };
+const submitClass = () => { formClass.post('/teacher/class', { onSuccess: () => { showClassModal.value = false; formClass.reset(); } }); };
+const submitStudent = () => { formStudent.post('/teacher/student', { onSuccess: () => { showStudentModal.value = false; formStudent.reset(); } }); };
+const deleteClass = (id) => { if(confirm('Yakin hapus kelas ini? Data siswa akan hilang.')) router.delete(`/teacher/class/${id}`); };
+const deleteStudent = (id) => { if(confirm('Hapus siswa ini?')) { router.delete(`/teacher/student/${id}`); showDetailModal.value = false; } };
 const applyFilter = () => {
     router.get('/teacher/dashboard', { class_name: selectedClass.value }, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['stats', 'recentActivities', 'students', 'analysis']
+        preserveState: true, preserveScroll: true, only: ['stats', 'recentActivities', 'students', 'analysis']
     });
 };
-
 const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 </script>
 
@@ -181,8 +145,8 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                         
                         <div v-if="studentHistory.length > 0" class="space-y-3">
                             <div v-for="log in studentHistory" :key="log.id" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                <div class="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-lg shadow-sm">
-                                    {{ ['brushing'].includes(log.activity_type) ? '🪥' : (['handwashing'].includes(log.activity_type) ? '🧼' : '📝') }}
+                                <div class="w-10 h-10 rounded-lg bg-white border flex items-center justify-center text-lg shadow-sm">
+                                    {{ log.proof_image ? '📸' : (log.activity_type === 'reproductive' ? '📖' : '📝') }}
                                 </div>
                                 <div class="flex-1">
                                     <p class="font-bold text-sm text-gray-800">{{ formatActivityLabel(log.activity_type) }}</p>
@@ -294,7 +258,7 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                             <span class="text-xs font-bold bg-white px-2 py-1 rounded border border-gray-200 text-gray-500">Rata-rata</span>
                         </div>
                         
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-2 gap-4">
                             
                             <div class="flex flex-col items-center text-center">
                                 <div class="relative w-16 h-16 md:w-20 md:h-20">
@@ -336,26 +300,6 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                                 </span>
                             </div>
 
-                            <div class="flex flex-col items-center text-center">
-                                <div class="relative w-16 h-16 md:w-20 md:h-20">
-                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                                        <circle cx="50" cy="50" r="40" stroke="#E2E8F0" stroke-width="8" fill="transparent" />
-                                        <circle cx="50" cy="50" r="40" stroke="#EC4899" stroke-width="8" fill="transparent" 
-                                            stroke-linecap="round"
-                                            :stroke-dasharray="2 * Math.PI * 40"
-                                            :stroke-dashoffset="calculateDashOffset(item.avg_reproductive, 40)"
-                                            class="transition-all duration-1000 ease-out" />
-                                    </svg>
-                                    <div class="absolute inset-0 flex items-center justify-center font-black text-pink-600 text-sm md:text-base">
-                                        {{ Math.round(item.avg_reproductive || 0) }}
-                                    </div>
-                                </div>
-                                <span class="text-[10px] font-bold text-gray-500 mt-2 uppercase">Tubuh</span>
-                                <span class="text-[9px] font-bold mt-1" :class="getScoreCategory(item.avg_reproductive).color">
-                                    {{ getScoreCategory(item.avg_reproductive).label }}
-                                </span>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -376,8 +320,8 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                                     class="w-full h-full object-cover cursor-zoom-in transition-transform duration-500 group-hover/img:scale-110"
                                     @click="openImageZoom(log.proof_image)">
                                 <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-300 text-xs text-center p-2 bg-orange-50 text-orange-400 font-bold">
-                                    <span class="text-2xl mb-1">📝</span>
-                                    <span>Hasil Kuis<br>(Teori)</span>
+                                    <span class="text-2xl mb-1">{{ log.activity_type === 'reproductive' ? '📖' : '📝' }}</span>
+                                    <span>{{ log.activity_type === 'reproductive' ? 'Edukasi' : 'Hasil Kuis' }}</span>
                                 </div>
                                 <div v-if="log.proof_image" class="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                                     <span class="text-white font-bold text-xs bg-black/50 px-2 py-1 rounded">🔍 Zoom</span>
@@ -458,8 +402,6 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                         </div>
                     </div>
                 </div>
-
-                
 
             </div>
         </main>

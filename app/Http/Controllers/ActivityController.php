@@ -190,10 +190,7 @@ class ActivityController extends Controller
             'student_id' => 'required|exists:students,id',
             'type' => 'required|in:brushing,handwashing,reproductive',
             'duration' => 'required|integer',
-            'is_quiz' => 'nullable|boolean', // Parameter baru
-            
-            // LOGIKA KUNCI: 
-            // Foto wajib ada KECUALI jika ini adalah 'is_quiz' atau tipe 'reproductive'
+            'is_quiz' => 'nullable|boolean', 
             'proof' => [
                 Rule::requiredIf(fn () => !$request->is_quiz && $request->type !== 'reproductive'),
                 'nullable',
@@ -204,28 +201,61 @@ class ActivityController extends Controller
 
         return DB::transaction(function () use ($request) {
             $student = Student::findOrFail($request->student_id);
-            
+            $today = Carbon::today();
+
+            // 2. CEK: APAKAH SUDAH MELAKUKAN AKTIVITAS INI HARI INI?
+            $alreadyDoneToday = ActivityLog::where('student_id', $student->id)
+                ->where('activity_type', $request->type)
+                ->whereDate('activity_date', $today)
+                ->exists();
+
+            // 3. UPLOAD FOTO (Jika ada)
             $imagePath = null;
             if ($request->hasFile('proof')) {
                 $imagePath = $request->file('proof')->store("proofs/{$student->id}", 'public');
             }
 
+            // 4. SIMPAN LOG (Tetap simpan riwayat meski sudah pernah, biar Guru tahu dia rajin)
             ActivityLog::create([
                 'student_id' => $student->id,
                 'activity_type' => $request->type,
                 'duration_seconds' => $request->duration,
                 'proof_image' => $imagePath,
-                'activity_date' => Carbon::now()->format('Y-m-d')
+                'activity_date' => $today,
+                'is_quiz' => $request->is_quiz ?? 0
             ]);
 
-            // Hitung Poin
-            // Jika ada foto (Timer), poin fix 50. Jika tidak (Kuis), poin sesuai skor (duration).
-            $pointsEarned = $request->hasFile('proof') ? 50 : $request->duration;
+            // 5. HITUNG POIN (LOGIKA ANTI-CURANG) 🛡️
+            $pointsEarned = 0;
+
+            // KASUS A: MATERI TUBUHKU (Bacaan)
+            if ($request->type === 'reproductive') {
+                // Hanya dapat poin jika BELUM baca hari ini
+                if (!$alreadyDoneToday) {
+                    $pointsEarned = 50; 
+                }
+            } 
+            // KASUS B: RUTINITAS (Sikat Gigi / Cuci Tangan dengan Foto)
+            elseif ($request->hasFile('proof')) {
+                // Hanya dapat poin jika BELUM kirim foto hari ini
+                if (!$alreadyDoneToday) {
+                    $pointsEarned = 50;
+                }
+            } 
+            // KASUS C: KUIS (Pilihan Ganda)
+            else {
+                // Kuis boleh diulang untuk memperbaiki nilai, tapi poin diambil dari skornya
+                // (Opsional: Kalau mau kuis juga cuma 1x poin, tambahkan `if (!$alreadyDoneToday)` di sini juga)
+                $pointsEarned = $request->duration; 
+            }
             
-            $student->increment('total_points', $pointsEarned);
+            // 6. UPDATE TOTAL POIN SISWA
+            if ($pointsEarned > 0) {
+                $student->increment('total_points', $pointsEarned);
+            }
 
             return response()->json([
-                'message' => 'Berhasil disimpan!',
+                'message' => $pointsEarned > 0 ? 'Poin bertambah!' : 'Sudah tercatat (Poin harian sudah diklaim).',
                 'points_earned' => $pointsEarned
             ]);
         });

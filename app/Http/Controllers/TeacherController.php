@@ -15,10 +15,8 @@ class TeacherController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Filter Kelas
         $filterClass = $request->input('class_name');
 
-        // 2. Query Dasar
         $studentQuery = Student::query();
         $logQuery = ActivityLog::query();
 
@@ -29,11 +27,10 @@ class TeacherController extends Controller
             });
         }
 
-        // 3. Statistik
         $totalStudents = $studentQuery->count();
         $activitiesToday = $logQuery->whereDate('activity_date', Carbon::today())->count();
 
-        // 4. Feed Aktivitas
+        // Feed Aktivitas (Tetap menampilkan log 'reproductive' sebagai tanda sudah baca)
         $recentActivities = $logQuery->with('student')
             ->orderBy('created_at', 'desc')
             ->limit(20)
@@ -51,16 +48,14 @@ class TeacherController extends Controller
                 ];
             });
 
-        // 5. Leaderboard
         $students = $studentQuery->orderBy('total_points', 'desc')->get();
         $allClasses = SchoolClass::orderBy('name')->get();
 
         // ==========================================
-        // 6. FITUR ANALISA (PERBAIKAN LOGIKA) 📊
+        // FITUR ANALISA (HANYA BRUSHING & HANDWASHING)
         // ==========================================
         $analysisQuery = Student::select('students.class')
             ->join('activity_logs', 'students.id', '=', 'activity_logs.student_id')
-            // PERBAIKAN: Ambil data jika 'is_quiz=1' ATAU jika 'tidak ada foto' (data lama)
             ->where(function($q) {
                 $q->where('activity_logs.is_quiz', 1)
                   ->orWhereNull('activity_logs.proof_image');
@@ -70,11 +65,11 @@ class TeacherController extends Controller
             $analysisQuery->where('students.class', $filterClass);
         }
 
+        // HAPUS AVG(reproductive) KARENA BUKAN KUIS NILAI LAGI
         $analysis = $analysisQuery->selectRaw('
                 students.class,
                 AVG(CASE WHEN activity_logs.activity_type = "brushing" THEN activity_logs.duration_seconds ELSE NULL END) as avg_brushing,
-                AVG(CASE WHEN activity_logs.activity_type = "handwashing" THEN activity_logs.duration_seconds ELSE NULL END) as avg_handwashing,
-                AVG(CASE WHEN activity_logs.activity_type = "reproductive" THEN activity_logs.duration_seconds ELSE NULL END) as avg_reproductive
+                AVG(CASE WHEN activity_logs.activity_type = "handwashing" THEN activity_logs.duration_seconds ELSE NULL END) as avg_handwashing
             ')
             ->groupBy('students.class')
             ->orderBy('students.class')

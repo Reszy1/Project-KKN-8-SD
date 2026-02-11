@@ -14,10 +14,10 @@ class ActivityLog extends Model
     protected $fillable = [
         'student_id',
         'activity_type',
+        'activity_date',
         'duration_seconds',
-        'proof_image',   // <--- Tambahan baru
-        'activity_date',  // <--- Tambahan baru (PENTING UNTUK KALENDER)
-        'is_quiz'         // <--- Tambahan baru untuk membedakan kuis dan praktik
+        'proof_image',
+        'is_quiz', // <--- PASTIIN INI ADA
     ];
 
     public function student()
