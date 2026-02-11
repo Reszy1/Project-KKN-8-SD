@@ -6,7 +6,8 @@ const props = defineProps({
     stats: Object,
     recentActivities: Array,
     students: Array,
-    classList: Array
+    classList: Array,
+    analysis: Array // <--- DATA ANALISA DARI CONTROLLER
 });
 
 // --- STATE MANAGEMENT ---
@@ -30,7 +31,21 @@ const formStudent = useForm({
 
 // --- HELPER FUNCTIONS ---
 
-// PERBAIKAN: Fungsi ini menerima 'activity_type' dari database
+// 1. Helper untuk Diagram Lingkaran (Analisa)
+const calculateDashOffset = (score, radius) => {
+    const circumference = 2 * Math.PI * radius;
+    const value = score || 0;
+    return circumference - (value / 100) * circumference;
+};
+
+const getScoreCategory = (score) => {
+    if (!score) return { label: 'Belum Ada Data', color: 'text-gray-400' };
+    if (score >= 80) return { label: 'Sangat Paham', color: 'text-green-600' };
+    if (score >= 60) return { label: 'Cukup Paham', color: 'text-yellow-600' };
+    return { label: 'Perlu Bimbingan', color: 'text-red-500' };
+};
+
+// 2. Helper Format Label Aktivitas
 const formatActivityLabel = (type) => {
     if (type === 'brushing') return 'Sikat Gigi';
     if (type === 'handwashing') return 'Cuci Tangan';
@@ -39,9 +54,7 @@ const formatActivityLabel = (type) => {
 };
 
 const formatActivityValue = (log) => {
-    if (log.duration_seconds === null || log.duration_seconds === undefined) {
-        return '-';
-    }
+    if (log.duration_seconds === null || log.duration_seconds === undefined) return '-';
 
     // Jika ada foto, berarti Timer (Menit & Detik)
     if (log.proof_image) {
@@ -62,7 +75,7 @@ const getActivityColor = (type) => {
     return 'bg-gray-100 text-gray-700';
 };
 
-// Filter Log Khusus Siswa Terpilih
+// Filter Log Khusus Siswa Terpilih (Untuk Modal Detail)
 const studentHistory = computed(() => {
     if (!selectedStudent.value) return [];
     return props.recentActivities.filter(log => log.student_name === selectedStudent.value.name);
@@ -99,7 +112,9 @@ const submitStudent = () => {
 };
 
 const deleteClass = (id) => {
-    if(confirm('Yakin hapus kelas ini?')) router.delete(`/teacher/class/${id}`);
+    if(confirm('Yakin hapus kelas ini? Data siswa di dalamnya juga akan terhapus.')) {
+        router.delete(`/teacher/class/${id}`);
+    }
 };
 
 const deleteStudent = (id) => {
@@ -113,7 +128,7 @@ const applyFilter = () => {
     router.get('/teacher/dashboard', { class_name: selectedClass.value }, {
         preserveState: true,
         preserveScroll: true,
-        only: ['stats', 'recentActivities', 'students']
+        only: ['stats', 'recentActivities', 'students', 'analysis']
     });
 };
 
@@ -262,8 +277,91 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                 <div class="bg-gradient-to-r from-orange-400 to-pink-500 p-6 rounded-2xl shadow-lg text-white flex items-center justify-between"><div class="relative z-10"><p class="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">Filter Aktif</p><p class="text-2xl font-black">{{ stats.filter_active ? `Kelas ${stats.filter_active}` : 'Semua Data' }}</p></div><span class="text-6xl opacity-20">📊</span></div>
             </div>
 
+            <div v-if="analysis && analysis.length > 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="text-2xl">📊</span>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-700">Analisa Pemahaman Siswa</h2>
+                        <p class="text-xs text-gray-400">Rata-rata skor kuis per kelas</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="(item, index) in analysis" :key="index" class="bg-gray-50 rounded-2xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
+                        
+                        <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-200">
+                            <span class="font-black text-gray-800 text-xl">Kelas {{ item.class }}</span>
+                            <span class="text-xs font-bold bg-white px-2 py-1 rounded border border-gray-200 text-gray-500">Rata-rata</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-2">
+                            
+                            <div class="flex flex-col items-center text-center">
+                                <div class="relative w-16 h-16 md:w-20 md:h-20">
+                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" stroke="#E2E8F0" stroke-width="8" fill="transparent" />
+                                        <circle cx="50" cy="50" r="40" stroke="#3B82F6" stroke-width="8" fill="transparent" 
+                                            stroke-linecap="round"
+                                            :stroke-dasharray="2 * Math.PI * 40"
+                                            :stroke-dashoffset="calculateDashOffset(item.avg_brushing, 40)"
+                                            class="transition-all duration-1000 ease-out" />
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center font-black text-blue-600 text-sm md:text-base">
+                                        {{ Math.round(item.avg_brushing || 0) }}
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-500 mt-2 uppercase">Gigi</span>
+                                <span class="text-[9px] font-bold mt-1" :class="getScoreCategory(item.avg_brushing).color">
+                                    {{ getScoreCategory(item.avg_brushing).label }}
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col items-center text-center">
+                                <div class="relative w-16 h-16 md:w-20 md:h-20">
+                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" stroke="#E2E8F0" stroke-width="8" fill="transparent" />
+                                        <circle cx="50" cy="50" r="40" stroke="#22C55E" stroke-width="8" fill="transparent" 
+                                            stroke-linecap="round"
+                                            :stroke-dasharray="2 * Math.PI * 40"
+                                            :stroke-dashoffset="calculateDashOffset(item.avg_handwashing, 40)"
+                                            class="transition-all duration-1000 ease-out" />
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center font-black text-green-600 text-sm md:text-base">
+                                        {{ Math.round(item.avg_handwashing || 0) }}
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-500 mt-2 uppercase">Tangan</span>
+                                <span class="text-[9px] font-bold mt-1" :class="getScoreCategory(item.avg_handwashing).color">
+                                    {{ getScoreCategory(item.avg_handwashing).label }}
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col items-center text-center">
+                                <div class="relative w-16 h-16 md:w-20 md:h-20">
+                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" stroke="#E2E8F0" stroke-width="8" fill="transparent" />
+                                        <circle cx="50" cy="50" r="40" stroke="#EC4899" stroke-width="8" fill="transparent" 
+                                            stroke-linecap="round"
+                                            :stroke-dasharray="2 * Math.PI * 40"
+                                            :stroke-dashoffset="calculateDashOffset(item.avg_reproductive, 40)"
+                                            class="transition-all duration-1000 ease-out" />
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center font-black text-pink-600 text-sm md:text-base">
+                                        {{ Math.round(item.avg_reproductive || 0) }}
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-500 mt-2 uppercase">Tubuh</span>
+                                <span class="text-[9px] font-bold mt-1" :class="getScoreCategory(item.avg_reproductive).color">
+                                    {{ getScoreCategory(item.avg_reproductive).label }}
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                
                 <div class="xl:col-span-2 space-y-6">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-xl">📥</span><h2 class="text-xl font-bold text-gray-700">Aktivitas Terbaru</h2>
@@ -277,8 +375,9 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                                 <img v-if="log.proof_image" :src="`/storage/${log.proof_image}`" 
                                     class="w-full h-full object-cover cursor-zoom-in transition-transform duration-500 group-hover/img:scale-110"
                                     @click="openImageZoom(log.proof_image)">
-                                <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-300 text-xs text-center p-2">
-                                    <span>📝</span><span>Kuis / No Image</span>
+                                <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-300 text-xs text-center p-2 bg-orange-50 text-orange-400 font-bold">
+                                    <span class="text-2xl mb-1">📝</span>
+                                    <span>Hasil Kuis<br>(Teori)</span>
                                 </div>
                                 <div v-if="log.proof_image" class="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                                     <span class="text-white font-bold text-xs bg-black/50 px-2 py-1 rounded">🔍 Zoom</span>
@@ -303,7 +402,7 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                                             {{ formatActivityLabel(log.activity_type) }}
                                         </span>
                                         <span class="inline-flex items-center gap-1.5 text-xs font-black px-2.5 py-1.5 rounded-lg border bg-gray-50 text-gray-600 border-gray-200">
-                                            ⏱️ {{ formatActivityValue(log) }}
+                                            {{ formatActivityValue(log) }}
                                         </span>
                                     </div>
                                 </div>
@@ -359,6 +458,8 @@ const getInitials = (name) => name.split(' ').map(n => n[0]).join('').substring(
                         </div>
                     </div>
                 </div>
+
+                
 
             </div>
         </main>

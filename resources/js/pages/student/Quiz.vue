@@ -10,8 +10,7 @@ const props = defineProps({
     type: String
 });
 
-// --- PERBAIKAN DI SINI ---
-// Kita definisikan full string class agar Tailwind mendeteksinya
+// Definisi Tema Warna Berdasarkan Tipe Kuis
 const theme = computed(() => {
     switch(props.type) {
         case 'brushing': 
@@ -83,6 +82,7 @@ const playSound = (soundType) => {
     } catch (e) { console.error(e); }
 };
 
+// --- LOGIKA UTAMA: CEK JAWABAN & SISTEM POIN ---
 const checkAnswer = (index) => {
     if (isAnimating.value) return;
     isAnimating.value = true;
@@ -92,15 +92,20 @@ const checkAnswer = (index) => {
     const isCorrect = index === props.questions[currentStep.value].answer;
 
     if (isCorrect) {
+        // JIKA BENAR: Tambah 20 Poin
         score.value += 20;
         feedback.value = 'correct';
         playSound('success'); 
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
     } else {
+        // JIKA SALAH: Kurangi 10 Poin (Tapi tidak boleh minus)
+        score.value = Math.max(0, score.value - 10);
+        
         feedback.value = 'wrong';
         playSound('wrong'); 
     }
 
+    // Jeda sebentar sebelum lanjut soal berikutnya
     setTimeout(() => {
         feedback.value = null;
         isAnimating.value = false;
@@ -115,17 +120,18 @@ const checkAnswer = (index) => {
 
 const finishQuiz = async () => {
     isFinished.value = true;
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-    playSound('success');
+    
+    // Jika skor bagus, kasih konfeti lebih banyak
+    if (score.value > 0) {
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        playSound('success');
+    }
 
     const formData = new FormData();
     formData.append('student_id', props.student.id);
     formData.append('type', props.type);
-    formData.append('duration', score.value);
-    
-    // --- TAMBAHAN PENTING ---
+    formData.append('duration', score.value); // Skor dikirim sebagai duration
     formData.append('is_quiz', 1); // Penanda bahwa ini kuis
-    // ------------------------
 
     try {
         await axios.post('/activity/store', formData, {
@@ -170,6 +176,9 @@ const finishQuiz = async () => {
                     <span class="font-black text-lg" :class="theme.textCount">
                         {{ currentStep + 1 }}/{{ questions.length }}
                     </span>
+                    <span class="text-sm font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">
+                        Skor: {{ score }}
+                    </span>
                 </div>
 
                 <div class="bg-white rounded-[3rem] p-8 md:p-10 shadow-2xl border-4 border-white relative overflow-hidden transition-all">
@@ -200,12 +209,12 @@ const finishQuiz = async () => {
                 <div class="mb-8 relative inline-block">
                     <div class="text-[140px] animate-bounce drop-shadow-2xl">🏆</div>
                     <div class="absolute -top-4 -right-4 bg-orange-500 text-white w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black border-4 border-white shadow-xl rotate-12">
-                        +{{ score }}
+                        {{ score }}
                     </div>
                 </div>
                 
                 <h1 class="text-5xl font-black mb-2 tracking-tight" :class="theme.textTitle">
-                    HEBAT!
+                    {{ score > 0 ? 'HEBAT!' : 'BELAJAR LAGI YUK!' }}
                 </h1>
                 <p class="text-2xl font-bold text-gray-500 mb-10">Skor Akhir Kamu: <span class="text-orange-500">{{ score }}</span></p>
                 
@@ -218,11 +227,13 @@ const finishQuiz = async () => {
 
             <transition name="pop">
                 <div v-if="feedback" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-sm">
-                    <div v-if="feedback === 'correct'" class="bg-green-500 text-white p-10 rounded-full shadow-2xl animate-bounce border-8 border-white">
-                        <span class="text-9xl filter drop-shadow-lg">✅</span>
+                    <div v-if="feedback === 'correct'" class="bg-green-500 text-white p-10 rounded-full shadow-2xl animate-bounce border-8 border-white flex flex-col items-center">
+                        <span class="text-8xl filter drop-shadow-lg">✅</span>
+                        <span class="font-black text-2xl mt-2">+20</span>
                     </div>
-                    <div v-if="feedback === 'wrong'" class="bg-red-500 text-white p-10 rounded-full shadow-2xl animate-shake border-8 border-white">
-                        <span class="text-9xl filter drop-shadow-lg">❌</span>
+                    <div v-if="feedback === 'wrong'" class="bg-red-500 text-white p-10 rounded-full shadow-2xl animate-shake border-8 border-white flex flex-col items-center">
+                        <span class="text-8xl filter drop-shadow-lg">❌</span>
+                        <span class="font-black text-2xl mt-2">-10</span>
                     </div>
                 </div>
             </transition>

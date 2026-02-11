@@ -65,12 +65,14 @@ class ActivityController extends Controller
         $allBadges = Badge::all();
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
-        $todayDate = Carbon::now()->format('Y-m-d'); // Tanggal hari ini
+        $todayDate = Carbon::now()->format('Y-m-d'); 
 
-        // 1. Ambil Log Kalender (Bulanan) - KODE LAMA TETAP DIPAKAI
+        // 1. Ambil Log Kalender (HANYA YANG ADA FOTO / TIMER)
+        // Tambahkan ->whereNotNull('proof_image') agar Kuis tidak masuk kalender
         $logs = ActivityLog::where('student_id', $studentId)
             ->whereMonth('activity_date', $currentMonth)
             ->whereYear('activity_date', $currentYear)
+            ->whereNotNull('proof_image') // <--- KUNCI PERBAIKAN 1
             ->get()
             ->groupBy(function($date) {
                 return Carbon::parse($date->activity_date)->format('Y-m-d');
@@ -80,17 +82,18 @@ class ActivityController extends Controller
             return $dayLogs->pluck('activity_type')->unique()->values();
         });
 
-        // 2. CEK STATUS HARIAN (BARU)
-        // Kita cek apakah hari ini sudah ada log untuk tipe tertentu
+        // 2. CEK STATUS MISI HARIAN (HANYA YANG ADA FOTO / TIMER)
         $todaysMission = [
             'brushing' => ActivityLog::where('student_id', $studentId)
                 ->where('activity_type', 'brushing')
                 ->whereDate('activity_date', $todayDate)
-                ->exists(), // Returns true/false
+                ->whereNotNull('proof_image') // <--- KUNCI PERBAIKAN 2 (Wajib ada foto)
+                ->exists(), 
             
             'handwashing' => ActivityLog::where('student_id', $studentId)
                 ->where('activity_type', 'handwashing')
                 ->whereDate('activity_date', $todayDate)
+                ->whereNotNull('proof_image') // <--- KUNCI PERBAIKAN 3 (Wajib ada foto)
                 ->exists(),
         ];
 
@@ -99,7 +102,7 @@ class ActivityController extends Controller
             'availableBadges' => $allBadges,
             'monthlyProgress' => $monthlyProgress,
             'currentDate' => $todayDate,
-            'todaysMission' => $todaysMission, // <--- Kirim data checklist ke Vue
+            'todaysMission' => $todaysMission, 
         ]);
     }
 
@@ -150,6 +153,13 @@ class ActivityController extends Controller
         ]);
     }
 
+    public function game($studentId)
+    {
+        $student = Student::findOrFail($studentId);
+        return Inertia::render('student/Game', [
+            'student' => $student
+        ]);
+    }
     /**
      * Menyimpan hasil aktivitas (Foto Bukti & Poin).
      */

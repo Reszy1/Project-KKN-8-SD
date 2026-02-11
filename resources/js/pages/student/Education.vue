@@ -76,20 +76,45 @@ const slides = [
     },
     {
         id: 4,
-        title: "Tubuhku, Privasiku ❤️",
+        title: "Tubuhku & Masa Remaja ❤️",
         icon: "🛡️",
         color: "bg-pink-500",
         bg: "bg-pink-50",
         text: "text-pink-600",
         btnColor: "bg-pink-500 hover:bg-pink-600 shadow-[0_4px_0_0_#be185d]",
         content: [
-            "Bagian tubuh yang tertutup baju renang adalah 'Area Pribadi'. Tidak boleh ada yang melihat/menyentuh sembarangan.",
-            "Tips Kebersihan:",
-            "1. Ganti celana dalam minimal 2x sehari (Pagi & Sore) atau saat lembab.",
-            "2. Cara Cebok: Basuh dari DEPAN ke BELAKANG (bukan sebaliknya) agar kuman dari kotoran tidak masuk ke area depan.",
-            "3. Keringkan dengan handuk/tisu agar tidak jamuran."
+            "Apa itu Pubertas? 🌱",
+            "Masa kamu tumbuh besar dari anak-anak menjadi remaja. Suara berubah, tubuh makin tinggi, dan mulai ada jerawat. Itu Normal!",
+            "👧 Untuk Perempuan: Haid (Menstruasi)",
+            "Keluar darah kotor dari jalan lahir. Jangan takut, itu tanda tubuhmu sehat! Pakai 'Pembalut' dan ganti tiap 4 jam ya.",
+            "👦 Untuk Laki-laki: Mimpi Basah",
+            "Bangun tidur celana basah & lengket. Itu bukan ngompol, tapi tanda kamu sudah bujang (besar). Mandi wajib ya!",
+            "Jaga Area Pribadi (Privasi) ⛔",
+            "👉 Bagian tubuh yang tertutup baju renang TIDAK BOLEH dilihat/disentuh orang lain.",
+            "👉 Ganti celana dalam pagi & sore.",
+            "👉 Cebok dari DEPAN ke BELAKANG (agar kuman tidak masuk)."
         ],
-        source: "Sumber: UNESCO Technical Guidance & Kemenkes RI"
+        source: "Sumber: Kemdikbud & Kemenkes RI"
+    },
+    {
+        id: 5,
+        title: "Makan Sehat, Tubuh Kuat! 🍱",
+        icon: "🥗",
+        color: "bg-orange-500",
+        bg: "bg-orange-50",
+        text: "text-orange-600",
+        btnColor: "bg-orange-500 hover:bg-orange-600 shadow-[0_4px_0_0_#ea580c]",
+        content: [
+            "Supaya tumbuh tinggi & pintar, perut harus diisi makanan bergizi (Isi Piringku).",
+            "Dalam 1 Piring Makan Harus Ada:",
+            "🍚 Makanan Pokok (Nasi/Kentang) = Sumber Tenaga.",
+            "🍗 Lauk Pauk (Telur/Ikan/Tahu) = Zat Pembangun Tubuh.",
+            "🥦 Sayur & Buah = Vitamin biar nggak gampang sakit.",
+            "Pantangan:",
+            "❌ Jangan sering makan mie instan & ciki-ciki.",
+            "❌ Kurangi minum es manis, perbanyak Air Putih (8 gelas/hari)."
+        ],
+        source: "Sumber: Kemenkes RI (Gerakan Isi Piringku)"
     }
 ];
 
@@ -110,7 +135,7 @@ const prevSlide = () => {
 
 // Cek apakah baris adalah Header/Judul (untuk styling bold)
 const isHeaderLine = (line) => {
-    return line.includes('?') || line.includes(':') || line.length < 20;
+    return line.includes('?') || line.includes(':') || line.length < 25; // Panjang disesuaikan
 };
 </script>
 
@@ -144,16 +169,18 @@ const isHeaderLine = (line) => {
                     </h1>
 
                     <div class="bg-gray-50 rounded-xl p-4 w-full text-left border border-gray-100 shadow-inner flex-1 overflow-y-auto custom-scrollbar mb-4">
-                        <ul class="space-y-3">
-                            <li v-for="(line, idx) in slides[currentSlide].content" :key="idx" 
-                                class="text-slate-600 font-medium text-sm md:text-base leading-relaxed flex items-start gap-2">
-                                
-                                <span v-if="!line.match(/^\d\./) && !line.startsWith('👉') && !line.startsWith('✅') && idx > 0" 
+                        <ul class="space-y-1"> <li v-for="(line, idx) in slides[currentSlide].content" :key="idx" 
+                                class="text-slate-600 font-medium text-sm md:text-base leading-relaxed flex items-start gap-2"
+                                :class="{ 'mt-3 border-t border-dashed border-gray-200 pt-2': isHeaderLine(line) && idx > 0 }">
+                                <span v-if="!line.match(/^\d\./) && !line.startsWith('👉') && !line.startsWith('✅') && !line.startsWith('❌') && !line.includes('?') && !line.includes(':') && idx > 0" 
                                       class="text-orange-400 mt-0.5 flex-shrink-0">👉</span>
                                 
                                 <span :class="{
-                                    'font-black text-slate-800': line.includes('Rasulullah') || line.includes('Wajib'),
-                                    'font-bold text-slate-700 underline decoration-wavy decoration-orange-300': isHeaderLine(line) && idx > 0
+                                    'font-black text-slate-800 text-lg': line.includes('Rasulullah') || line.includes('Wajib') || line.includes('Pubertas'),
+                                    'font-bold text-pink-500 text-lg': line.includes('Perempuan'),
+                                    'font-bold text-blue-500 text-lg': line.includes('Laki-laki'),
+                                    'font-bold text-red-500 text-lg': line.includes('Privasi') || line.startsWith('❌'),
+                                    'font-bold text-slate-700 underline decoration-wavy decoration-orange-300': isHeaderLine(line) && !line.includes('Perempuan') && !line.includes('Laki-laki') && idx > 0,
                                 }">
                                     {{ line }}
                                 </span>

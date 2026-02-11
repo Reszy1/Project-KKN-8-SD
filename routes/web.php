@@ -48,6 +48,8 @@ Route::get('/quiz/{studentId}/{type}', [ActivityController::class, 'quiz'])
 Route::post('/activity/store', [ActivityController::class, 'store'])
     ->name('activity.store');
 
+Route::get('/game/{studentId}', [ActivityController::class, 'game'])->name('student.game');
+
 
 // --- 3. AREA GURU (AUTHENTICATION) ---
 

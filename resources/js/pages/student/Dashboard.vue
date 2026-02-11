@@ -62,8 +62,9 @@ const monthlyStats = computed(() => {
     return { brushing, handwashing, perfectDays };
 });
 
-// State Modal Panduan
-const showGuide = ref(false);
+// State Modal
+const showGuide = ref(false);         // Modal Bantuan
+const showNutritionModal = ref(false); // Modal Gizi (Baru)
 
 // --- PROGRESS BAR LEVEL ---
 const nextBadge = computed(() => {
@@ -213,13 +214,11 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
                     <div v-for="(day, index) in calendarDays" :key="index"
                         class="relative aspect-square rounded-xl md:rounded-2xl flex flex-col items-center justify-center border transition-all duration-300"
                         :class="[
-                            /* Logic Warna Background Berdasarkan Status */
                             day.status === 'perfect' ? 'bg-green-100 border-green-200' : 
                             day.status === 'partial' ? 'bg-yellow-50 border-yellow-200' :
                             day.status === 'missed' ? 'bg-gray-100 border-gray-200 opacity-70' :
                             day.date ? 'bg-white border-slate-100' : 'bg-transparent border-transparent',
 
-                            /* Logic Hari Ini */
                             day.fullDate === currentDate ? 'ring-4 ring-orange-400 ring-offset-2 z-10 shadow-lg' : ''
                         ]"
                     >
@@ -243,42 +242,60 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
                 <div class="flex flex-wrap gap-3 justify-center pt-4 border-t border-gray-100">
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 md:w-4 md:h-4 bg-green-100 border border-green-300 rounded-full"></div>
-                        <span class="text-[10px] md:text-xs font-bold text-gray-500">Lengkap (Hebat!)</span>
+                        <span class="text-[10px] md:text-xs font-bold text-gray-500">Lengkap</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 md:w-4 md:h-4 bg-yellow-50 border border-yellow-300 rounded-full"></div>
-                        <span class="text-[10px] md:text-xs font-bold text-gray-500">Kurang Lengkap</span>
+                        <span class="text-[10px] md:text-xs font-bold text-gray-500">Kurang</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 md:w-4 md:h-4 bg-gray-100 border border-gray-300 rounded-full"></div>
-                        <span class="text-[10px] md:text-xs font-bold text-gray-500">Bolong/Lupa</span>
+                        <span class="text-[10px] md:text-xs font-bold text-gray-500">Bolong</span>
                     </div>
                 </div>
             </div>
 
             <div>
                 <h3 class="text-lg md:text-2xl font-black text-gray-700 mb-4 flex items-center gap-2 px-1">
-                    <span>🧩</span> Tantangan Kuesioner
+                    <span>🧩</span> Zona Pintar
                 </h3>
-                <div class="flex overflow-x-auto gap-4 pb-4 px-2 snap-x snap-mandatory md:grid md:grid-cols-3 md:overflow-visible">
+                <div class="flex overflow-x-auto gap-4 pb-4 px-2 snap-x snap-mandatory md:grid md:grid-cols-4 md:overflow-visible">
+                    
                     <div @click="mulaiKuis('brushing')" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-indigo-50 active:bg-indigo-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-indigo-100 active:scale-95 transition-transform text-center shadow-sm">
                         <div class="text-4xl md:text-5xl mb-3">🦷</div>
                         <h4 class="text-base md:text-xl font-black text-indigo-700 mb-1">Kuis Gigi</h4>
                         <p class="text-indigo-400 text-[10px] md:text-xs font-bold">Cek ilmu gigimu!</p>
                     </div>
+
                     <div @click="mulaiKuis('handwashing')" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-teal-50 active:bg-teal-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-teal-100 active:scale-95 transition-transform text-center shadow-sm">
                         <div class="text-4xl md:text-5xl mb-3">🧼</div>
                         <h4 class="text-base md:text-xl font-black text-teal-700 mb-1">Kuis Tangan</h4>
                         <p class="text-teal-400 text-[10px] md:text-xs font-bold">Lawan kuman!</p>
                     </div>
+
                     <div @click="mulaiKuis('reproductive')" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-pink-50 active:bg-pink-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-pink-100 active:scale-95 transition-transform text-center shadow-sm">
                         <div class="text-4xl md:text-5xl mb-3">❤️</div>
                         <h4 class="text-base md:text-xl font-black text-pink-700 mb-1">Kuis Tubuh</h4>
                         <p class="text-pink-400 text-[10px] md:text-xs font-bold">Jaga tubuhmu!</p>
                     </div>
+
+                    <div @click="showNutritionModal = true" class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-orange-50 active:bg-orange-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-orange-100 active:scale-95 transition-transform text-center shadow-sm">
+                        <div class="text-4xl md:text-5xl mb-3">🍱</div>
+                        <h4 class="text-base md:text-xl font-black text-orange-700 mb-1">Isi Piringku</h4>
+                        <p class="text-orange-400 text-[10px] md:text-xs font-bold">Makan sehat yuk!</p>
+                    </div>
+
                 </div>
+                
             </div>
 
+            <Link :href="`/game/${student.id}`" 
+                        class="min-w-[160px] md:min-w-0 flex-1 snap-center bg-red-50 active:bg-red-100 cursor-pointer p-5 md:p-6 rounded-[2rem] border-2 border-red-100 active:scale-95 transition-transform text-center shadow-sm block decoration-0">
+                        <div class="text-4xl md:text-5xl mb-3 animate-pulse">🦠</div>
+                        <h4 class="text-base md:text-xl font-black text-red-700 mb-1">Basmi Kuman</h4>
+                        <p class="text-red-400 text-[10px] md:text-xs font-bold">Game Seru! 🎮</p>
+                    </Link>
+                    
             <div class="bg-white rounded-[2.5rem] p-5 md:p-8 shadow-xl border-4 border-yellow-100 relative overflow-hidden">
                 <h3 class="text-lg md:text-2xl font-black text-yellow-600 mb-4 flex items-center gap-2 relative z-10 px-1">
                     <span>🏆</span> Koleksi Lencana
@@ -318,25 +335,97 @@ const mulaiKuis = (tipe) => { router.get(`/quiz/${props.student.id}/${tipe}`); }
                         <div class="text-2xl">📅</div>
                         <div>
                             <h4 class="font-black text-blue-700 text-sm">Cek Kalender</h4>
-                            <p class="text-gray-600 text-xs font-medium">Kotak <strong>Hijau</strong> artinya anak rajin (Sikat Gigi + Cuci Tangan). Kotak <strong>Merah</strong> artinya lupa.</p>
+                            <p class="text-gray-600 text-xs font-medium">Kotak <strong>Hijau</strong> artinya anak rajin. Kotak <strong>Merah</strong> artinya lupa.</p>
                         </div>
                     </div>
                     <div class="bg-orange-50 p-4 rounded-2xl flex gap-3 items-center border border-orange-100">
                         <div class="text-2xl">🏆</div>
                         <div>
                             <h4 class="font-black text-orange-700 text-sm">Target Bulanan</h4>
-                            <p class="text-gray-600 text-xs font-medium">Lihat angka di atas kalender. Usahakan "Hari Sempurna" semakin banyak!</p>
+                            <p class="text-gray-600 text-xs font-medium">Usahakan "Hari Sempurna" semakin banyak!</p>
                         </div>
                     </div>
                     <div class="bg-green-50 p-4 rounded-2xl flex gap-3 items-center border border-green-100">
                         <div class="text-2xl">📱</div>
                         <div>
                             <h4 class="font-black text-green-700 text-sm">Bantu Klik</h4>
-                            <p class="text-gray-600 text-xs font-medium">Ingatkan anak untuk klik tombol "MULAI" setelah melakukan kegiatan.</p>
+                            <p class="text-gray-600 text-xs font-medium">Ingatkan anak untuk klik tombol "MULAI" setelah kegiatan.</p>
                         </div>
                     </div>
                 </div>
                 <button @click="showGuide = false" class="mt-6 w-full bg-green-500 text-white font-black py-3 rounded-2xl shadow-[0_4px_0_0_#15803d] active:shadow-none active:translate-y-1 transition-all">SIAP, SAYA MENGERTI! 👌</button>
+            </div>
+        </div>
+
+        <div v-if="showNutritionModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showNutritionModal = false"></div>
+            
+            <div class="bg-white w-full max-w-md rounded-[2.5rem] p-6 md:p-8 shadow-2xl border-4 border-orange-100 relative animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+                
+                <div class="text-center mb-4">
+                    <div class="text-5xl mb-2">🍽️</div>
+                    <h2 class="text-2xl font-black text-orange-600">Isi Piringku Sekali Makan</h2>
+                    <p class="text-gray-400 font-bold text-xs">Panduan Makan Sehat Kemenkes RI</p>
+                </div>
+
+                <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-4">
+                    
+                    <div class="relative w-48 h-48 mx-auto bg-gray-100 rounded-full border-4 border-gray-200 overflow-hidden shadow-inner flex flex-wrap">
+                        <div class="w-1/2 h-full bg-yellow-100 flex flex-col justify-center items-center p-2 border-r border-white">
+                            <span class="text-xl">🍚</span>
+                            <span class="text-[8px] font-bold text-yellow-700 text-center">Makanan Pokok<br>(Nasi/Kentang)</span>
+                        </div>
+                        <div class="w-1/2 h-full flex flex-col">
+                            <div class="h-1/2 bg-green-100 flex flex-col justify-center items-center border-b border-white">
+                                <span class="text-xl">🥦</span>
+                                <span class="text-[8px] font-bold text-green-700">Sayuran</span>
+                            </div>
+                            <div class="h-1/2 flex">
+                                <div class="w-1/2 bg-amber-100 flex flex-col justify-center items-center border-r border-white">
+                                    <span class="text-lg">🍗</span>
+                                    <span class="text-[6px] font-bold text-amber-800">Lauk</span>
+                                </div>
+                                <div class="w-1/2 bg-red-100 flex flex-col justify-center items-center">
+                                    <span class="text-lg">🍎</span>
+                                    <span class="text-[6px] font-bold text-red-700">Buah</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex items-center gap-3">
+                            <span class="text-xl">🍚</span>
+                            <div class="text-xs text-gray-600 font-medium">
+                                <strong>Makanan Pokok:</strong> Sumber tenaga (Nasi, Jagung, Ubi).
+                            </div>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-xl border border-amber-100 flex items-center gap-3">
+                            <span class="text-xl">🍗</span>
+                            <div class="text-xs text-gray-600 font-medium">
+                                <strong>Lauk Pauk:</strong> Zat pembangun (Telur, Ikan, Tahu, Tempe).
+                            </div>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-xl border border-green-100 flex items-center gap-3">
+                            <span class="text-xl">🥦</span>
+                            <div class="text-xs text-gray-600 font-medium">
+                                <strong>Sayur & Buah:</strong> Vitamin biar nggak gampang sakit!
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center gap-3">
+                            <span class="text-xl">💧</span>
+                            <div class="text-xs text-gray-600 font-medium">
+                                <strong>Air Putih:</strong> Minum 8 gelas sehari ya! Kurangi manis-manis.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button @click="showNutritionModal = false" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-3 rounded-2xl shadow-[0_4px_0_0_#c2410c] active:shadow-none active:translate-y-1 transition-all">
+                    SIAP MAKAN SEHAT! 🥗
+                </button>
+
             </div>
         </div>
 

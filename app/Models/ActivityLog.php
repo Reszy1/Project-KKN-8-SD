@@ -16,7 +16,8 @@ class ActivityLog extends Model
         'activity_type',
         'duration_seconds',
         'proof_image',   // <--- Tambahan baru
-        'activity_date'  // <--- Tambahan baru (PENTING UNTUK KALENDER)
+        'activity_date',  // <--- Tambahan baru (PENTING UNTUK KALENDER)
+        'is_quiz'         // <--- Tambahan baru untuk membedakan kuis dan praktik
     ];
 
     public function student()
